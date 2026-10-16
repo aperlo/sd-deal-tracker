@@ -1,0 +1,521 @@
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Deal Tracker â€” Area Nord</title>
+<style>
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0A0F0E;
+    min-height: 100vh;
+    color: #E2E8E4;
+  }
+
+  /* â”€â”€ HERO BAND neroâ†’arancio â”€â”€ */
+  .hero-band {
+    background: linear-gradient(135deg, #0A0F0E 0%, #1A1208 40%, #FF941A 100%);
+    padding: 28px 24px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-band::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(255,148,26,0.25) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-brand {
+    color: #FF941A;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    opacity: .9;
+  }
+  .hero-title {
+    color: #FFFFFF;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .hero-subtitle {
+    color: rgba(255,255,255,0.65);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .channel-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,148,26,0.18);
+    border: 1px solid rgba(255,148,26,0.4);
+    color: #FF941A;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 99px;
+    margin-top: 12px;
+  }
+  .channel-badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #FF941A;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* â”€â”€ RECIPIENT LEGEND â”€â”€ */
+  .recipient-legend {
+    display: flex;
+    gap: 8px;
+    padding: 10px 24px;
+    background: #111816;
+    border-bottom: 1px solid #1E2B28;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #6E7773;
+  }
+  .legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .ld-compilatore { background:#60A5FA; }
+  .ld-desk        { background:#6366F1; }
+  .ld-dircomm     { background:#FF941A; }
+  .ld-agente      { background:#2EC4A0; }
+
+  /* â”€â”€ FORM â”€â”€ */
+  .form-wrap { max-width:560px; margin:0 auto; padding:24px 20px 48px; }
+
+  .section-hdr {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #FF941A;
+    margin: 24px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-hdr::after { content:''; flex:1; height:1px; background:#1E2B28; }
+
+  .field { margin-bottom: 16px; }
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: #8A918D;
+    margin-bottom: 6px;
+  }
+  label .req { color:#FF941A; margin-left:2px; }
+
+  input, select, textarea {
+    width: 100%;
+    background: #111816;
+    border: 1px solid #263530;
+    border-radius: 10px;
+    color: #E2E8E4;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: #FF941A;
+    box-shadow: 0 0 0 3px rgba(255,148,26,.12);
+  }
+  input[readonly] { color:#6E7773; cursor:default; background:#0D1210; }
+  textarea { resize:vertical; min-height:80px; }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236E7773' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+  select option { background:#111816; }
+
+  .row-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  .btn-submit {
+    width: 100%;
+    background: linear-gradient(135deg, #FF941A 0%, #E07A00 100%);
+    color: #FFFFFF;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-top: 28px;
+    transition: opacity .2s, transform .1s;
+  }
+  .btn-submit:hover  { opacity:.92; }
+  .btn-submit:active { transform:scale(.985); }
+  .btn-submit:disabled { opacity:.45; cursor:not-allowed; }
+
+  .toast {
+    display: none;
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    background: #1A2E28;
+    border: 1px solid #2EC4A0;
+    border-radius: 12px;
+    padding: 14px 22px;
+    color: #3FD9B3;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 999;
+    text-align: center;
+    max-width: 90vw;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  }
+  .toast.error { border-color:#EF4444; color:#FCA5A5; background:#2A1A1A; }
+  .toast.show  { display:block; animation:fadeUp .3s ease; }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateX(-50%) translateY(10px); }
+    to   { opacity:1; transform:translateX(-50%) translateY(0); }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="hero-band">
+  <div class="hero-brand">Sales Design Â· Deal Tracker</div>
+  <div class="hero-title">Daily Sales Tracker</div>
+  <div class="hero-subtitle">Registrazione merchant Â· Nuovo sistema</div>
+  <div class="channel-badge"><span class="dot"></span>Area Nord</div>
+</div>
+
+<div class="recipient-legend">
+  <div class="legend-item"><span class="legend-dot ld-compilatore"></span>Compilatore</div>
+  <div class="legend-item"><span class="legend-dot ld-desk"></span>Sales Desk</div>
+  <div class="legend-item"><span class="legend-dot ld-dircomm"></span>Dir. Commerciale</div>
+  <div class="legend-item"><span class="legend-dot ld-agente"></span>Agente / Area</div>
+</div>
+
+<div class="form-wrap">
+  <form id="dealForm">
+
+    <div class="section-hdr">Dati agente</div>
+
+    <div class="field">
+      <label>Codice canale</label>
+      <input type="text" id="codice" value="SD_NORD" readonly tabindex="-1">
+    </div>
+
+    <div class="field">
+      <label>Canale</label>
+      <input type="text" id="agente" value="Area Nord" readonly tabindex="-1">
+    </div>
+    <div class="field">
+      <label>Nome agente <span class="req">*</span></label>
+      <input type="text" id="agente_nome" placeholder="Nome e cognome" required>
+    </div>
+    <div class="field">
+      <label>Email agente (opzionale â€” per ricevere conferma)</label>
+      <input type="email" id="emailAgente" placeholder="agente@esempio.it">
+    </div>
+    <div class="field">
+      <label>Data deal <span class="req">*</span></label>
+      <input type="date" id="data" required>
+    </div>
+
+    <div class="section-hdr">Dati merchant</div>
+
+    <div class="field">
+      <label>Ragione sociale <span class="req">*</span></label>
+      <input type="text" id="ragioneSociale" placeholder="Nome azienda" required>
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label>Partita IVA <span class="req">*</span></label>
+        <input type="text" id="partitaIva" placeholder="11 cifre" maxlength="11" inputmode="numeric" required>
+      </div>
+      <div class="field">
+        <label>Provincia <span class="req">*</span></label>
+        <select id="provincia" required>
+          <option value="">â€” seleziona â€”</option>
+          <option>AG</option>
+          <option>AL</option>
+          <option>AN</option>
+          <option>AO</option>
+          <option>AP</option>
+          <option>AQ</option>
+          <option>AR</option>
+          <option>AT</option>
+          <option>AV</option>
+          <option>BA</option>
+          <option>BG</option>
+          <option>BI</option>
+          <option>BL</option>
+          <option>BN</option>
+          <option>BO</option>
+          <option>BR</option>
+          <option>BS</option>
+          <option>BT</option>
+          <option>BZ</option>
+          <option>CA</option>
+          <option>CB</option>
+          <option>CE</option>
+          <option>CH</option>
+          <option>CL</option>
+          <option>CN</option>
+          <option>CO</option>
+          <option>CR</option>
+          <option>CS</option>
+          <option>CT</option>
+          <option>CZ</option>
+          <option>EN</option>
+          <option>FC</option>
+          <option>FE</option>
+          <option>FG</option>
+          <option>FI</option>
+          <option>FM</option>
+          <option>FR</option>
+          <option>GE</option>
+          <option>GO</option>
+          <option>GR</option>
+          <option>IM</option>
+          <option>IS</option>
+          <option>KR</option>
+          <option>LC</option>
+          <option>LE</option>
+          <option>LI</option>
+          <option>LO</option>
+          <option>LT</option>
+          <option>LU</option>
+          <option>MB</option>
+          <option>MC</option>
+          <option>ME</option>
+          <option>MI</option>
+          <option>MN</option>
+          <option>MO</option>
+          <option>MS</option>
+          <option>MT</option>
+          <option>NA</option>
+          <option>NO</option>
+          <option>NU</option>
+          <option>OR</option>
+          <option>PA</option>
+          <option>PC</option>
+          <option>PD</option>
+          <option>PE</option>
+          <option>PG</option>
+          <option>PI</option>
+          <option>PN</option>
+          <option>PO</option>
+          <option>PR</option>
+          <option>PT</option>
+          <option>PU</option>
+          <option>PV</option>
+          <option>PZ</option>
+          <option>RA</option>
+          <option>RC</option>
+          <option>RE</option>
+          <option>RG</option>
+          <option>RI</option>
+          <option>RM</option>
+          <option>RN</option>
+          <option>RO</option>
+          <option>SA</option>
+          <option>SI</option>
+          <option>SO</option>
+          <option>SP</option>
+          <option>SR</option>
+          <option>SS</option>
+          <option>SU</option>
+          <option>SV</option>
+          <option>TA</option>
+          <option>TE</option>
+          <option>TN</option>
+          <option>TO</option>
+          <option>TP</option>
+          <option>TR</option>
+          <option>TS</option>
+          <option>TV</option>
+          <option>UD</option>
+          <option>VA</option>
+          <option>VB</option>
+          <option>VC</option>
+          <option>VE</option>
+          <option>VI</option>
+          <option>VR</option>
+          <option>VT</option>
+          <option>VV</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Fatturato mensile stimato (â‚¬) <span class="req">*</span></label>
+      <input type="number" id="fatturatoMese" placeholder="es. 25000" min="0" required>
+    </div>
+
+    <div class="section-hdr">Dispositivo &amp; pricing</div>
+
+    <div class="row-2">
+      <div class="field">
+        <label>Tipo dispositivo <span class="req">*</span></label>
+        <select id="tipoDispositivo" required>
+          <option value="">â€” seleziona â€”</option>
+          <option value="Standard">Standard</option>
+          <option value="Mini">Mini</option>
+          <option value="Mobile">Mobile</option>
+          <option value="Integrato">Integrato</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>NÂ° dispositivi <span class="req">*</span></label>
+        <input type="number" id="numeroDispositivi" placeholder="1" min="1" required>
+      </div>
+    </div>
+    <div class="field">
+      <label>Pricing (â‚¬/mese) <span class="req">*</span></label>
+      <select id="pricing" required>
+        <option value="">â€” seleziona â€”</option>
+        <option value="0">0 (incluso)</option>
+        <option value="15">15</option>
+        <option value="29">29</option>
+        <option value="49">49</option>
+        <option value="79">79</option>
+        <option value="99">99</option>
+        <option value="129">129</option>
+        <option value="149">149</option>
+        <option value="189">189</option>
+        <option value="249">249</option>
+      </select>
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label>Tariffa RevPay <span class="req">*</span></label>
+        <select id="tariffaPay" required>
+          <option value="">â€” seleziona â€”</option>
+          <option value="0,80%">0,80%</option>
+          <option value="0,70%">0,70%</option>
+          <option value="0,60%">0,60%</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Tariffa Domestic <span class="req">*</span></label>
+        <select id="tariffaDomestic" required>
+          <option value="">â€” seleziona â€”</option>
+          <option value="0,80%">0,80%</option>
+          <option value="0,70%">0,70%</option>
+          <option value="0,60%">0,60%</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-hdr">Note</div>
+
+    <div class="field">
+      <label>Note libere</label>
+      <textarea id="note" placeholder="Informazioni aggiuntive, condizioni specialiâ€¦"></textarea>
+    </div>
+
+    <button type="submit" class="btn-submit" id="submitBtn">Registra deal â†’</button>
+  </form>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+const ENDPOINT      = "https://script.google.com/macros/s/AKfycbwbPutRJgG1m05OH_dTNbbhcRsrhXzZf66wOoLgNEyesLpC1x_pj7Mdlar2HJ5wnNpEWg/exec";
+const CODICE_CANALE = "SD_NORD";
+
+document.addEventListener('DOMContentLoaded', function() {
+  const oggi = new Date();
+  const yyyy = oggi.getFullYear();
+  const mm   = String(oggi.getMonth() + 1).padStart(2, '0');
+  const dd   = String(oggi.getDate()).padStart(2, '0');
+  document.getElementById('data').value = yyyy + '-' + mm + '-' + dd;
+});
+
+function toast(msg, tipo) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (tipo === 'error' ? ' error' : '');
+  setTimeout(() => { t.className = 'toast'; }, 5000);
+}
+
+document.getElementById('dealForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Invio in corsoâ€¦';
+
+  const piva = document.getElementById('partitaIva').value.trim();
+  if (!/^\d{11}$/.test(piva)) {
+    toast('Partita IVA non valida: inserire esattamente 11 cifre', 'error');
+    btn.disabled = false; btn.textContent = 'Registra deal â†’';
+    return;
+  }
+
+  const payload = {
+    codice:            CODICE_CANALE,
+    data:              document.getElementById('data').value,
+    agente:            document.getElementById('agente').value.trim(),
+    ragioneSociale:    document.getElementById('ragioneSociale').value.trim(),
+    partitaIva:        piva,
+    provincia:         document.getElementById('provincia').value,
+    fatturatoMese:     document.getElementById('fatturatoMese').value,
+    tipoDispositivo:   document.getElementById('tipoDispositivo').value,
+    numeroDispositivi: document.getElementById('numeroDispositivi').value,
+    pricing:           document.getElementById('pricing').value,
+    tariffaPay:        document.getElementById('tariffaPay').value,
+    tariffaDomestic:   document.getElementById('tariffaDomestic').value,
+    note:              document.getElementById('note').value.trim(),
+    emailAgente:       document.getElementById('emailAgente').value.trim()
+  };
+
+  try {
+    await fetch(ENDPOINT, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+    toast('âœ“ Deal registrato correttamente!');
+    setTimeout(() => {
+      ['agente','emailAgente','ragioneSociale','partitaIva','fatturatoMese','note'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      ['provincia','tipoDispositivo','pricing','tariffaPay','tariffaDomestic','numeroDispositivi'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+    }, 1500);
+  } catch(err) {
+    toast('Errore di rete. Riprova.', 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Registra deal â†’';
+});
+
+</script>
+</body>
+</html>

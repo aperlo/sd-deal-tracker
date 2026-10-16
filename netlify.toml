@@ -1,0 +1,22 @@
+# Netlify — cruscotto statico, nessuna build necessaria.
+[build]
+  publish = "."
+  command = ""
+
+# Cache lunga per la base dati geografica (immutabile).
+[[headers]]
+  for = "/data/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# La pagina principale non va cachata (deve riflettere gli aggiornamenti).
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

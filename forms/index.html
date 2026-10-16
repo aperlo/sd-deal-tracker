@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Design — Portale Vendite</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0A0F0E;min-height:100vh;color:#E2E8E4}
+.hero{background:linear-gradient(135deg,#0A0F0E 0%,#1A1208 40%,#FF941A 100%);padding:32px 24px 28px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(255,148,26,.35) 0%,transparent 70%);border-radius:50%}
+.hero-title{font-size:26px;font-weight:800;letter-spacing:-.5px;color:#fff;position:relative}
+.hero-title span{color:#FF941A;text-shadow:0 0 20px rgba(255,148,26,.6)}
+.hero-sub{color:rgba(255,255,255,.65);font-size:14px;margin-top:6px;position:relative}
+.container{max-width:700px;margin:0 auto;padding:28px 20px}
+.section-title{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#FF941A;margin:28px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.card{display:flex;flex-direction:column;gap:4px;background:#111810;border:1px solid rgba(255,148,26,.2);border-radius:14px;padding:16px 18px;text-decoration:none;color:inherit;transition:all .2s;cursor:pointer}
+.card:hover{border-color:#FF941A;background:#161e13;transform:translateY(-2px);box-shadow:0 4px 20px rgba(255,148,26,.15)}
+.card.atd{border-color:rgba(59,130,246,.2)}
+.card.atd:hover{border-color:#3B82F6;background:#121620;box-shadow:0 4px 20px rgba(59,130,246,.15)}
+.card.dashboard{border-color:rgba(34,197,94,.2)}
+.card.dashboard:hover{border-color:#22c55e;background:#111810;box-shadow:0 4px 20px rgba(34,197,94,.15)}
+.card.cruscotto{border-color:rgba(0,240,255,.2)}
+.card.cruscotto:hover{border-color:#00f0ff;background:#050d12;box-shadow:0 4px 20px rgba(0,240,255,.15)}
+.card-label{font-size:13px;font-weight:700;color:#E2E8E4}
+.card-sub{font-size:11px;color:rgba(255,255,255,.4)}
+.badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.08em;padding:3px 8px;border-radius:99px;margin-bottom:6px}
+.badge-sd{background:rgba(255,148,26,.15);color:#FF941A;border:1px solid rgba(255,148,26,.3)}
+.badge-atd{background:rgba(59,130,246,.15);color:#3B82F6;border:1px solid rgba(59,130,246,.3)}
+.badge-tool{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3)}
+.badge-rec{background:rgba(0,240,255,.1);color:#00f0ff;border:1px solid rgba(0,240,255,.25)}
+.divider{height:1px;background:rgba(255,255,255,.07);margin:24px 0}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="hero-title">SALES <span>DESIGN</span> / ATD</div>
+  <div class="hero-sub">Portale vendite — inserimento contratti, statistiche, recruiting</div>
+</div>
+<div class="container">
+
+  <div class="section-title">📊 Strumenti</div>
+  <div class="grid">
+    <a class="card dashboard" href="dashboard.html">
+      <span class="badge badge-tool">DASHBOARD</span>
+      <div class="card-label">Statistiche Vendite</div>
+      <div class="card-sub">KPI, canali, province, periodi</div>
+    </a>
+    <a class="card cruscotto" href="../rete-revolut-cruscotto/dist/mappa-agenti.html">
+      <span class="badge badge-rec">CRUSCOTTO</span>
+      <div class="card-label">Rete Revolut</div>
+      <div class="card-sub">Mappa, recruiting, linee AM</div>
+    </a>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title">🟠 Sales Design — Registrazione contratti</div>
+  <div class="grid">
+    <a class="card" href="direct.html">
+      <span class="badge badge-sd">SD · DIRECT</span>
+      <div class="card-label">Direct Sales</div>
+      <div class="card-sub">Agenti diretti SD</div>
+    </a>
+    <a class="card" href="wecomm.html">
+      <span class="badge badge-sd">SD · AGENZIA</span>
+      <div class="card-label">WeComm</div>
+      <div class="card-sub">Agenzia WeComm</div>
+    </a>
+    <a class="card" href="fiditech.html">
+      <span class="badge badge-sd">SD · AGENZIA</span>
+      <div class="card-label">Fiditech</div>
+      <div class="card-sub">Agenzia Fiditech</div>
+    </a>
+    <a class="card" href="puntosemplice.html">
+      <span class="badge badge-sd">SD · AGENZIA</span>
+      <div class="card-label">Punto Semplice</div>
+      <div class="card-sub">Agenzia Punto Semplice</div>
+    </a>
+    <a class="card" href="grandasolutions.html">
+      <span class="badge badge-sd">SD · AGENZIA</span>
+      <div class="card-label">Granda Solutions</div>
+      <div class="card-sub">Agenzia Granda Solutions</div>
+    </a>
+    <a class="card" href="teamtutino.html">
+      <span class="badge badge-sd">SD · AGENZIA</span>
+      <div class="card-label">Team Tutino</div>
+      <div class="card-sub">Agenzia Team Tutino</div>
+    </a>
+    <a class="card" href="nord.html">
+      <span class="badge badge-sd">SD · AREA</span>
+      <div class="card-label">Area Nord</div>
+      <div class="card-sub">AM Area Nord</div>
+    </a>
+    <a class="card" href="centro.html">
+      <span class="badge badge-sd">SD · AREA</span>
+      <div class="card-label">Area Centro</div>
+      <div class="card-sub">AM Area Centro</div>
+    </a>
+    <a class="card" href="sud.html">
+      <span class="badge badge-sd">SD · AREA</span>
+      <div class="card-label">Area Sud</div>
+      <div class="card-sub">AM Area Sud</div>
+    </a>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title">🔵 Attitude Ltd — Registrazione contratti</div>
+  <div class="grid">
+    <a class="card atd" href="form-atd-direct.html">
+      <span class="badge badge-atd">ATD · DIRECT</span>
+      <div class="card-label">Direct Sales ATD</div>
+      <div class="card-sub">Agenti diretti Attitude Ltd</div>
+    </a>
+  </div>
+
+</div>
+</body>
+</html>
