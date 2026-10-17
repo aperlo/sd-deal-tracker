@@ -426,7 +426,18 @@ details.fold>div{padding:2px 0 16px}
 #view-recruiting .pfold .pf-v{font-weight:800;font-variant-numeric:tabular-nums;color:var(--violet);font-size:15px;min-width:20px;text-align:right}
 #view-recruiting .pfold-body{padding:12px 14px 14px 16px;display:flex;flex-direction:column;gap:11px;border-top:1px solid var(--line)}
 
-/* ═══ FIX MOBILE ═══ */
+/* ═══ BUDGET & TARGET band ═══ */
+#budgetBand{grid-template-columns:repeat(4,auto) 1fr;gap:20px}
+@media(max-width:860px){#budgetBand{grid-template-columns:1fr 1fr}#budgetBand .alerts{grid-column:span 2;justify-content:flex-start}}
+
+/* ═══ FIX MOBILE — layout easy ═══ */
+@media(max-width:720px){
+  .logo{width:36px;height:36px;border-radius:11px}.logo svg{width:30px;height:30px}
+  .brand-t{font-size:15px}
+  #refreshTxt{display:none}
+  .topbar .btn{padding:9px 11px}
+  .status{font-size:11px}
+}
 @media(max-width:560px){
   .tbl-c{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .tbl-c table{min-width:430px}
@@ -436,10 +447,13 @@ details.fold>div{padding:2px 0 16px}
   .gbar select{min-width:0;flex:1}
   .exec{grid-template-columns:1fr;gap:12px}
   .exec .alerts{justify-content:flex-start}
+  #budgetBand{grid-template-columns:1fr 1fr;gap:14px}#budgetBand .alerts{grid-column:span 2}
   .kpis{grid-template-columns:1fr 1fr;gap:10px}
   .kpi{padding:14px}.kpi-v{font-size:24px}
+  .exec .ebig{font-size:22px}
   #view-recruiting .tops{grid-template-columns:1fr}
   #view-recruiting .geo{grid-template-columns:1fr}
+  .g2,.g3{gap:12px}
   .help-btn,.hz-btn{padding:10px 13px;font-size:12px}
   .help{left:12px;bottom:12px}
   .band{gap:16px}
@@ -593,6 +607,13 @@ details.fold>div{padding:2px 0 16px}
     <div class="kpi"><div class="kpi-top"><div class="kpi-ic ic-mint"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="2" width="10" height="12" rx="2"/><path d="M6.5 12h3" stroke-linecap="round"/></svg></div><div class="kpi-l">Dispositivi</div></div><div class="kpi-v tnum" id="kDisp" style="color:var(--mint)">—</div><div class="kpi-s">unità attivate</div></div>
     <div class="kpi"><div class="kpi-top"><div class="kpi-ic ic-sky"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 1.5C5 1.5 3 4 3 6.6 3 10 8 14.5 8 14.5S13 10 13 6.6C13 4 11 1.5 8 1.5z"/><circle cx="8" cy="6.5" r="1.8"/></svg></div><div class="kpi-l">Province · Canali</div></div><div class="kpi-v tnum" id="kProv" style="color:var(--sky)">—</div><div class="kpi-s" id="kCanSub">canali attivi</div></div>
   </div>
+
+  <div class="section-h"><div><div class="section-t">Budget &amp; obiettivo</div><div class="section-d">Mese attuale vs precedente · target del mese prossimo = media azienda + recupero da fare</div></div></div>
+  <div class="exec" id="budgetBand"></div>
+  <details class="fold" id="targetFold"><summary>Target per singolo sales</summary>
+    <div class="card tbl-c" style="margin-top:4px"><table><thead><tr><th class="rank">#</th><th>Sales</th><th class="num">Questo mese</th><th class="num">Media az./sales</th><th class="num">Target prossimo</th><th class="num">Recupero</th></tr></thead><tbody id="targetRows"><tr><td colspan="6" class="empty">—</td></tr></tbody></table></div>
+    <div class="count" style="margin-top:8px">Target sales = media azienda per venditore + metà del divario da recuperare · chi è già sopra media mantiene il livello.</div>
+  </details>
 
   <div class="g2">
     <div class="card pad">
@@ -919,7 +940,7 @@ const Sales=(function(){
   function apply(){const rete=$("fRete").value,tipo=$("fTipo").value,canale=$("fCanale").value;
     FILTERED=APP.records.filter(r=>{const d=pd(r.data);if(!inHZ(d))return false;if(rete!=="all"&&r.rete!==rete)return false;if(tipo!=="all"&&r.tipo!==tipo)return false;if(canale!=="all"&&r.canale!==canale)return false;return true;});
     $("sCount").textContent=FILTERED.length+" di "+APP.records.length+" contratti · "+hzLabel();
-    renderExec();kpi(rete,tipo,canale);netSplit();periodoChart();tipoChart();canaleRank();mensile();projection();agentiTable();provTable();}
+    renderExec();targetBudget();kpi(rete,tipo,canale);netSplit();periodoChart();tipoChart();canaleRank();mensile();projection();agentiTable();provTable();}
 
   function renderExec(){
     const sd=FILTERED.filter(r=>r.rete==="SD").length,atd=FILTERED.filter(r=>r.rete==="ATD").length,tot=sd+atd;
@@ -938,6 +959,39 @@ const Sales=(function(){
       `<div class="eblk"><div class="el">Contratti · ${hzLabel()}</div><div class="ebig" style="color:var(--brand)">${tot}</div><div class="el">${dchip} vs prec.</div></div>`+
       `<div class="eblk"><div class="el">SD vs ATD</div><div class="esplit"><span style="color:var(--brand);font-weight:800;font-size:22px">${sd}</span><span style="color:var(--violet);font-weight:800;font-size:22px">${atd}</span></div><div class="el">${merch} merchant onboardati</div></div>`+
       `<div class="alerts">${al.join("")||'<span class="al ok">Tutto in linea</span>'}</div>`;
+  }
+  /* ── BUDGET & TARGET mese prossimo (media azienda + recupero) ── */
+  function targetBudget(){
+    const rete=$("fRete").value,tipo=$("fTipo").value,canale=$("fCanale").value;
+    const match=r=>(rete==="all"||r.rete===rete)&&(tipo==="all"||r.tipo===tipo)&&(canale==="all"||r.canale===canale);
+    const recs=APP.records.filter(match);
+    const ref=hzRange()[0],refY=ref.getFullYear(),refM=ref.getMonth();
+    const prevD=new Date(refY,refM-1,1);
+    const inM=(d,y,m)=>d&&d.getFullYear()===y&&d.getMonth()===m;
+    const months={}; recs.forEach(r=>{const d=pd(r.data);if(!d)return;months[d.getFullYear()+"-"+d.getMonth()]=1;});
+    const mesiAttivi=Object.keys(months).length||1;
+    const totale=recs.length, mediaMese=totale/mesiAttivi;
+    const attuale=recs.filter(r=>inM(pd(r.data),refY,refM)).length;
+    const prec=recs.filter(r=>inM(pd(r.data),prevD.getFullYear(),prevD.getMonth())).length;
+    const dpct=prec?Math.round((attuale-prec)/prec*100):null;
+    const recupero=Math.max(0,Math.round(mediaMese-attuale));
+    const targetAz=Math.round(mediaMese+recupero);
+    // sales attivi (escluso il resp. di rete), media per venditore
+    const salesRecs=recs.filter(r=>r.tipo!=="Agenzia"&&normName(r.agente)!==normName(RESP_RETE)&&normName(r.agente));
+    const nSales=new Set(salesRecs.map(r=>normName(r.agente))).size||1;
+    const B=mediaMese/nSales;
+    const dchip=dpct==null?'<span class="delta flat">n.d.</span>':'<span class="delta '+(dpct>0?'up':dpct<0?'down':'flat')+'">'+(dpct>0?'+':'')+dpct+'%</span>';
+    const bg=document.getElementById("budgetBand"); if(bg)bg.innerHTML=
+      '<div class="eblk"><div class="el">Mese attuale · '+MESI[refM]+' '+refY+'</div><div class="ebig" style="color:var(--brand)">'+attuale+'</div><div class="el">'+dchip+' vs '+MESI[prevD.getMonth()]+' ('+prec+')</div></div>'+
+      '<div class="eblk"><div class="el">Media azienda / mese</div><div class="ebig" style="color:var(--sky)">'+mediaMese.toFixed(1)+'</div><div class="el">'+mesiAttivi+' mesi · '+totale+' contratti</div></div>'+
+      '<div class="eblk"><div class="el">Da recuperare</div><div class="ebig" style="color:'+(recupero>0?'var(--warn)':'var(--mint)')+'">'+(recupero>0?'+'+recupero:'0')+'</div><div class="el">per tornare in media</div></div>'+
+      '<div class="eblk"><div class="el">Target mese prossimo</div><div class="ebig" style="color:var(--mint)">'+targetAz+'</div><div class="el">media + recupero</div></div>'+
+      '<div class="alerts"><span class="al '+(attuale>=mediaMese?'ok':'warn')+'">'+(attuale>=mediaMese?'Mese in linea con la media':'Mese sotto media di '+recupero)+'</span></div>';
+    // target per singolo sales
+    const bySales={};
+    salesRecs.forEach(r=>{const k=normName(r.agente);(bySales[k]=bySales[k]||{n:0,label:r.agente}); if(inM(pd(r.data),refY,refM))bySales[k].n++;});
+    const rows=Object.values(bySales).map(o=>{const cur=o.n;const target=cur>=B?Math.max(cur,Math.round(B)):Math.round(B+(B-cur)*0.5);return{label:o.label,cur,target,rec:Math.max(0,target-cur)};}).sort((a,b)=>b.rec-a.rec||b.target-a.target);
+    const tb=document.getElementById("targetRows"); if(tb)tb.innerHTML=rows.length?rows.map((r,i)=>'<tr><td class="rank">'+(i+1)+'</td><td style="font-weight:600">'+r.label+'</td><td class="num">'+r.cur+'</td><td class="num" style="color:var(--muted)">'+B.toFixed(1)+'</td><td class="num" style="font-weight:700;color:var(--mint)">'+r.target+'</td><td class="num" style="color:'+(r.rec>0?'var(--warn)':'var(--faint)')+'">'+(r.rec>0?'+'+r.rec:'—')+'</td></tr>').join(""):'<tr><td colspan="6" class="empty">Nessun sales nel mese</td></tr>';
   }
   function kpi(rete,tipo,canale){const tot=FILTERED.length;
     const merch=new Set(FILTERED.map(r=>normName(r.merchant)).filter(Boolean)).size;
@@ -1119,7 +1173,9 @@ const Recruiting=(function(){
     agenti.forEach(a=>{const r=regKey(a.regione);if(!S[r])return;S[r].persone++;S[r].contratti+=(tm[a.id]||0);});
     const totC=REG.reduce((s,r)=>s+S[r].contratti,0),totP=REG.reduce((s,r)=>s+S[r].persone,0);
     const avg=totP?totC/totP:0; // contratti per persona medi della rete
-    REG.forEach(r=>{const x=S[r];x.cpp=x.persone?x.contratti/x.persone:0;x.idx=(x.persone>0)?(avg>0?Math.round(x.cpp/avg*100):0):null;});
+    const MIN_C=3,CAP=300; // indice solo da campione ≥3 contratti; cap per evitare valori fuori scala
+    REG.forEach(r=>{const x=S[r];x.cpp=x.persone?x.contratti/x.persone:0;
+      x.idx=(x.persone>0&&x.contratti>=MIN_C&&avg>0)?Math.min(CAP,Math.round(x.cpp/avg*100)):null;});
     return{S,totC,totP,avg};}
 
   function buildGeo(){if(built||!APP.geo.length)return;
@@ -1174,7 +1230,7 @@ const Recruiting=(function(){
   function buildLegend(){$("#mLegend").innerHTML=mode==="perf"?'<div class="lg"><span class="lgd" style="background:var(--mint)"></span>Sopra media (≥120)</div><div class="lg"><span class="lgd" style="background:var(--sky)"></span>In linea (80–119)</div><div class="lg"><span class="lgd" style="background:var(--brand)"></span>Sotto media (&lt;80)</div><div class="lg"><span class="lgd" style="background:var(--faint)"></span>N.D.</div><div class="lg">Bolla = contratti</div>':'<div class="lg"><span class="lgd" style="background:var(--violet)"></span>Più persone</div><div class="lg">Bolla = persone · colore = avanzamento</div>';$("#mode-note").textContent=mode==="perf"?"Dimensione+colore = performance (contratti) della zona":"Dimensione = presenza · colore = avanzamento recruiting";}
   function buildMlist(RS){const rows=REG.map(r=>RS.S[r]).filter(s=>s.persone>0).sort((a,b)=>b.contratti-a.contratti||b.persone-a.persone);const max=Math.max.apply(null,[1].concat(rows.map(s=>s.contratti)));$("#m-h").textContent=selAM?"Linea di "+selAM.nome:"Tutta la rete";$("#mlist").classList.toggle("focus",!!(hover||pinned));$("#mlist").innerHTML=rows.length?rows.map(s=>{const hot=(hover===s.r)||(!hover&&pinned===s.r);return'<button type="button" class="row'+(hot?" hot":"")+'" data-r="'+esc(s.r)+'"><div class="nm">'+esc(s.r)+'<div class="track"><i style="width:'+Math.round(s.contratti/max*100)+'%"></i></div></div><span class="v">'+s.contratti+'</span></button>';}).join(""):'<div class="empty">Nessun contratto nel periodo.</div>';}
   function renderZone(RS){const rows=REG.map(r=>RS.S[r]).sort((a,b)=>{if(a.idx==null&&b.idx==null)return b.persone-a.persone;if(a.idx==null)return 1;if(b.idx==null)return -1;return b.idx-a.idx;});$("#zone-rows").innerHTML=rows.map(s=>{const hot=(hover===s.r)||(!hover&&pinned===s.r);const idxTxt=s.idx==null?'<span class="muted">n.d.</span>':'<span class="idx '+idxClass(s.idx)+'">'+(s.idx>=120?"▲":s.idx>=80?"=":"▼")+' '+s.idx+'</span>';return'<tr data-r="'+esc(s.r)+'" class="'+(hot?"hot":"")+'"><td>'+esc(s.r)+'</td><td class="num">'+s.persone+'</td><td class="num">'+s.contratti+'</td><td class="num">'+(s.persone?s.cpp.toFixed(1):"–")+'</td><td class="num">'+idxTxt+'</td></tr>';}).join("");
-    $("#zone-note").innerHTML="Indice = (contratti/persona della zona) ÷ (media rete <b>"+RS.avg.toFixed(1)+"</b>) × 100 · 100 = in linea con la media · &lt;80 = molte persone poca resa.";
+    $("#zone-note").innerHTML="Indice = (contratti/persona della zona) ÷ (media rete <b>"+RS.avg.toFixed(1)+"</b>) × 100 · 100 = in linea · &lt;80 = molte persone poca resa · calcolato solo con ≥3 contratti (campioni piccoli = n.d.), max 300.";
     const cop=REG.map(r=>({r,n:RS.S[r].persone})).filter(x=>x.n<=1).sort((a,b)=>a.n-b.n);
     $("#cop-list").innerHTML=cop.length?cop.map(x=>{
       const ppl=agenti.filter(a=>regKey(a.regione)===x.r);
