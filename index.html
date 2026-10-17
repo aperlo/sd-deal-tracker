@@ -411,6 +411,43 @@ details.fold>div{padding:2px 0 16px}
 #view-recruiting .aqua-leg .al span{color:var(--muted)}
 .aqua-wrap{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch}
 @media(max-width:620px){.aqua-wrap{grid-template-columns:1fr}}
+#view-recruiting .aqua .tl .fn{display:block;font-size:9px;font-weight:600;opacity:.92;margin-top:1px;letter-spacing:.02em}
+
+/* ═══ SCHEDE persone a tendina (richiamabili) ═══ */
+#view-recruiting .pfolds{display:flex;flex-direction:column;gap:8px}
+#view-recruiting .pfold{position:relative;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+#view-recruiting .pfold::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--pc-rete,var(--brand))}
+#view-recruiting .pfold>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px;padding:11px 14px 11px 16px}
+#view-recruiting .pfold>summary::-webkit-details-marker{display:none}
+#view-recruiting .pfold>summary::after{content:"";margin-left:2px;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .2s;flex-shrink:0}
+#view-recruiting .pfold[open]>summary::after{transform:rotate(45deg)}
+#view-recruiting .pfold>summary:hover{background:var(--surface2)}
+#view-recruiting .pfold .pf-nm{flex:1;min-width:0;font-size:13.5px;font-weight:700;overflow-wrap:anywhere}
+#view-recruiting .pfold .pf-v{font-weight:800;font-variant-numeric:tabular-nums;color:var(--violet);font-size:15px;min-width:20px;text-align:right}
+#view-recruiting .pfold-body{padding:12px 14px 14px 16px;display:flex;flex-direction:column;gap:11px;border-top:1px solid var(--line)}
+
+/* ═══ FIX MOBILE ═══ */
+@media(max-width:560px){
+  .tbl-c{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tbl-c table{min-width:430px}
+  .gbar{gap:9px}
+  .gb-group{flex-wrap:wrap;gap:6px}
+  .gbar .hz-seg button{padding:6px 10px}
+  .gbar select{min-width:0;flex:1}
+  .exec{grid-template-columns:1fr;gap:12px}
+  .exec .alerts{justify-content:flex-start}
+  .kpis{grid-template-columns:1fr 1fr;gap:10px}
+  .kpi{padding:14px}.kpi-v{font-size:24px}
+  #view-recruiting .tops{grid-template-columns:1fr}
+  #view-recruiting .geo{grid-template-columns:1fr}
+  .help-btn,.hz-btn{padding:10px 13px;font-size:12px}
+  .help{left:12px;bottom:12px}
+  .band{gap:16px}
+  .toolbar{gap:10px}
+  .section-t{font-size:15px}
+  #view-recruiting .aqua{max-width:300px;aspect-ratio:1.15/1}
+  #view-recruiting .aqua .tl .n{font-size:14px}
+}
 
 /* ═══ TOP performer (I) ═══ */
 #view-recruiting .tops{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px;margin-bottom:6px}
@@ -699,6 +736,7 @@ const CT_LABEL={A:"Sales",B:"Agency",C:"Override Mng"};
 const eur=n=>"€ "+Math.round(Number(n)||0).toLocaleString("it-IT");
 const eurK=n=>{n=Number(n)||0;return n>=10000?("€ "+Math.round(n/1000)+"k"):eur(n);};
 const normName=s=>String(s||"").toLowerCase().replace(/\s+/g," ").trim();
+const RESP_RETE="Andrea Perlo";   // responsabile di rete: ha le sue stats ma è escluso dalle classifiche
 const validProv=p=>{const s=String(p||"").trim().toUpperCase();return /^[A-Z]{2}$/.test(s)?s:"";};
 const pdDMY=s=>{const p=String(s||"").split("/");return p.length===3?new Date(+p[2],+p[1]-1,+p[0]):null;};
 
@@ -985,6 +1023,8 @@ const Sales=(function(){
       else if(dim==="rete"){key=r.rete||"—";label=key==="SD"?"Sales Design (SD)":key==="ATD"?"Attitude (ATD)":key;sub=r.canale;}
       else if(dim==="am"){key=r.am||amOf(r.agente)||"Indipendenti / Direct";label=key;sub=r.canale;}
       else{key=normName(r.agente)||"—";label=r.agente||"—";sub=r.canale;}
+      // il responsabile di rete non compare in classifica (né come AM né come agente)
+      if(normName(label)===normName(RESP_RETE)||(dim==="am"&&normName(key)===normName(RESP_RETE)))return;
       if(!by[key])by[key]={label,n:0,fat:0,subc:{},merch:[]};const o=by[key];o.n++;o.fat+=(+r.fatturato||0);o.subc[sub]=(o.subc[sub]||0)+1;o.merch.push({m:r.merchant||"—",d:r.data||""});});
     const rows=Object.entries(by).sort((a,b)=>b[1].n-a[1].n).slice(0,15);const totN=rows.reduce((s,r)=>s+r[1].n,0)||1;
     document.getElementById("rankCol1").textContent={sales:"Agente",canale:"Canale",am:"Area Manager",rete:"Rete"}[dim];
@@ -1122,8 +1162,9 @@ const Recruiting=(function(){
     el.innerHTML='<b style="font-size:'+size+'px">'+totC+'</b><div class="gt-sub">contratti · '+esc(hzLabel())+'<br><b>'+merch+'</b> merchant Rev&nbsp;B attivi</div>'; }
   /* I · top performer del periodo */
   function renderTops(){ const el=document.getElementById("topPerf"); if(!el)return; const tm=_tmHZ||{};
-    const sellers=agenti.filter(a=>a.ruolo!=="AGENZIA").map(a=>({a,n:tm[a.id]||0})).sort((x,y)=>y.n-x.n);
-    const amRank=ams().map(am=>{const own=tm[am.id]||0;const team=agenti.filter(a=>a.parent===am.nome&&a.id!==am.id).reduce((s,p)=>s+(tm[p.id]||0),0);return{a:am,n:own+team};}).sort((x,y)=>y.n-x.n);
+    const notResp=a=>normName(a.nome)!==normName(RESP_RETE);   // il resp. di rete non entra in classifica
+    const sellers=agenti.filter(a=>a.ruolo!=="AGENZIA"&&notResp(a)).map(a=>({a,n:tm[a.id]||0})).sort((x,y)=>y.n-x.n);
+    const amRank=ams().filter(notResp).map(am=>{const own=tm[am.id]||0;const team=agenti.filter(a=>a.parent===am.nome&&a.id!==am.id).reduce((s,p)=>s+(tm[p.id]||0),0);return{a:am,n:own+team};}).sort((x,y)=>y.n-x.n);
     const ags=agenti.filter(a=>a.ruolo==="AGENZIA").map(a=>({a,n:tm[a.id]||0})).sort((x,y)=>y.n-x.n);
     const c=(cls,medal,label,o)=>o&&o.n>0
       ? '<div class="topc '+cls+'"><span class="medal">'+medal+'</span><div style="min-width:0"><div class="tc-l">'+label+'</div><div class="tc-n">'+esc(o.a.nome)+'</div></div><span class="tc-v">'+o.n+'</span></div>'
@@ -1159,9 +1200,9 @@ const Recruiting=(function(){
     // D · piramide "acquario": apice = fase finale, base = prima fase; l'acqua riempie ogni fascia ∝ persone
     const aqua='<div class="aqua-wrap"><div class="aqua">'+
       [5,4,3,2,1,0].map(k=>{const n=atK[k];const h=Math.max(Math.round(n/maxK*100),n>0?10:0);
-        return '<div class="tier"><div class="wat" style="height:'+h+'%"></div><div class="tl"><span class="n">'+n+'</span>'+esc(STAGES[k])+'</div></div>';}).join("")+
+        return '<div class="tier"><div class="wat" style="height:'+h+'%"></div><div class="tl"><span class="n">'+n+'</span><span class="fn">fase '+(k+1)+'</span></div></div>';}).join("")+
       '</div><div class="aqua-leg">'+
-      STAGES.map((s,k)=>{const n=atK[k];return '<div class="al"><span class="d" style="background:'+stageColor(k)+'"></span><div style="flex:1"><b>'+n+'</b> · '+esc(s)+'</div><span>'+Math.round(n/totP*100)+'%</span></div>';}).join("")+
+      [5,4,3,2,1,0].map(k=>{const s=STAGES[k],n=atK[k];return '<div class="al"><span class="d" style="background:'+stageColor(k)+'"></span><div style="flex:1"><b>'+(k+1)+' · '+esc(s)+'</b></div><span style="color:var(--violet);font-weight:700">'+n+'</span><span style="min-width:34px;text-align:right">'+Math.round(n/totP*100)+'%</span></div>';}).join("")+
       '</div></div>';
     $("#funnel-list").innerHTML=agenti.length?aqua:'<div class="empty">Nessuna persona in rete.</div>';
     $("#thr-chips").innerHTML=[14,30,60].map(d=>'<button type="button" class="chip" data-thr="'+d+'" aria-pressed="'+(thr===d)+'">'+d+' GG</button>').join("");
@@ -1171,7 +1212,7 @@ const Recruiting=(function(){
     $("#mat-rows").innerHTML=withDate.length?buckets.map(b=>{const ps=withDate.filter(a=>{const m=Math.floor(daysSince(a.ingaggio)/30);return m>=b.min&&m<=b.max;});const att=ps.reduce((s,a)=>s+(tm[a.id]||0),0);return'<tr><td>'+b.l+'</td><td class="num">'+ps.length+'</td><td class="num">'+att+'</td><td class="num">'+(ps.length?(att/ps.length).toFixed(1):"–")+'</td></tr>';}).join(""):'<tr><td colspan="4" class="muted" style="padding:14px">Inserisci le date di ingaggio nel Google Sheet.</td></tr>';}
 
   function badgeRule(d){if(d.ruolo==="AM"){const n=num(d.diretti);return n>=AM_MIN?'<span class="rule ok">Minimo '+AM_MIN+' diretti raggiunto</span>':'<span class="rule warn">Mancano '+(AM_MIN-n)+' diretti (min. '+AM_MIN+')</span>';}if(d.ruolo==="AGENZIA"){const a=num(d.agenti);return a>=AG_MIN?'<span class="rule ok">Soglia '+AG_MIN+' agenti raggiunta</span>':'<span class="rule warn">Mancano '+(AG_MIN-a)+' agenti (min. '+AG_MIN+')</span>';}return'<span class="rule muted">'+(d.parent?'Linea di '+esc(d.parent):'Senza AM')+'</span>';}
-  function card(d){const st=num(d.stage);
+  function cardInner(d){const st=num(d.stage);
     const cQ=_tmQ[d.id]||0,cAll=_tmAll[d.id]||0;const mesi=Math.max(1,Math.round((daysSince(d.ingaggio)||90)/30));const avgMese=cAll/mesi;
     const perf='<div class="perf"><div class="pm"><b style="color:var(--violet)">'+cQ+'</b><span>trim. '+esc(qLabel())+'</span></div><div class="pm"><b>'+cAll+'</b><span>totali da inizio</span></div><div class="pm"><b>'+avgMese.toFixed(1)+'</b><span>media / mese</span></div></div>';
     let extra="";if(d.ruolo==="AM")extra='<div class="k">Diretti</div><div class="val">'+num(d.diretti)+'</div><div class="k">Capacità</div><div class="val">'+(d.capacita==null?"—":num(d.capacita))+'</div>';if(d.ruolo==="AGENZIA")extra='<div class="k">Agenti</div><div class="val">'+num(d.agenti)+'</div>';
@@ -1179,7 +1220,12 @@ const Recruiting=(function(){
     const stato = d.attivo===false
       ? '<span style="color:var(--neg)">OFF'+(d.offDal?' dal '+esc(d.offDal):'')+'</span>'
       : '<span style="color:var(--mint)">ON'+(d.onDal?' dal '+esc(d.onDal):'')+'</span>';
-    return'<article class="pcard" style="--pc-rete:'+(d.rete==="ATD"?"#8B7CFF":"#FF8A1E")+'"><div class="pcard-top"><div style="min-width:0"><h4>'+esc(d.nome)+'</h4><span class="meta"><span class="pid">'+esc(d.id||"")+'</span>'+((d.id&&(d.canale||d.citta||d.regione))?' · ':'')+esc(d.canale||d.citta||"")+(((d.canale||d.citta)&&d.regione)?" · ":"")+esc(regKey(d.regione))+'</span></div><div class="tags"><span class="rete-tag '+(d.rete==="ATD"?"ATD":"SD")+'">'+(d.rete==="ATD"?"ATD":"SD")+'</span>'+roleBadge(d)+ctBadge(d.tipoContratto)+(d.esclusivita?'<span class="bdg '+(/esclus/i.test(d.esclusivita)?"ok":"warn")+'">'+esc(d.esclusivita)+'</span>':'')+'</div></div>'+badgeRule(d)+'<div class="frow">'+extra+'<div class="k">Canale</div><div class="val">'+esc(d.canale||"—")+'</div><div class="k">Tipo ingaggio</div><div class="val">'+esc(d.tipoIngaggio||"—")+'</div><div class="k">AM</div><div class="val">'+esc(d.parent||"—")+'</div><div class="k">Stato</div><div class="val">'+stato+'</div>'+(d.altriMandati?'<div class="k">Altri mandati</div><div class="val" style="color:var(--warn)">'+esc(d.altriMandati)+'</div>':'')+'</div>'+perf+'<div><div class="pipe-l">FASE '+(st+1)+'/6 · '+esc(STAGES[st])+'</div><div class="pipe">'+steps+'</div></div></article>';}
+    return badgeRule(d)+'<div class="frow">'+extra+'<div class="k">Canale</div><div class="val">'+esc(d.canale||"—")+'</div><div class="k">Tipo ingaggio</div><div class="val">'+esc(d.tipoIngaggio||"—")+'</div><div class="k">AM</div><div class="val">'+esc(d.parent||"—")+'</div><div class="k">Stato</div><div class="val">'+stato+'</div>'+(d.altriMandati?'<div class="k">Altri mandati</div><div class="val" style="color:var(--warn)">'+esc(d.altriMandati)+'</div>':'')+'</div>'+perf+'<div><div class="pipe-l">FASE '+(st+1)+'/6 · '+esc(STAGES[st])+'</div><div class="pipe">'+steps+'</div></div>';}
+  function cardHead(d){return '<div class="pcard-top"><div style="min-width:0"><h4>'+esc(d.nome)+'</h4><span class="meta"><span class="pid">'+esc(d.id||"")+'</span>'+((d.id&&(d.canale||d.citta||d.regione))?' · ':'')+esc(d.canale||d.citta||"")+(((d.canale||d.citta)&&d.regione)?" · ":"")+esc(regKey(d.regione))+'</span></div><div class="tags"><span class="rete-tag '+(d.rete==="ATD"?"ATD":"SD")+'">'+(d.rete==="ATD"?"ATD":"SD")+'</span>'+roleBadge(d)+ctBadge(d.tipoContratto)+(d.esclusivita?'<span class="bdg '+(/esclus/i.test(d.esclusivita)?"ok":"warn")+'">'+esc(d.esclusivita)+'</span>':'')+'</div></div>';}
+  function card(d){ return '<article class="pcard" style="--pc-rete:'+(d.rete==="ATD"?"#8B7CFF":"#FF8A1E")+'">'+cardHead(d)+cardInner(d)+'</article>'; }
+  // scheda a tendina (richiamabile): chiusa di default, mostra nome+rete+ruolo+contratti trimestre
+  function personFold(d){ const cQ=_tmQ[d.id]||0,rete=(d.rete==="ATD"?"ATD":"SD");
+    return '<details class="pfold" style="--pc-rete:'+(d.rete==="ATD"?"#8B7CFF":"#FF8A1E")+'"><summary><span class="rete-tag '+rete+'">'+rete+'</span><span class="pf-nm">'+esc(d.nome)+'</span>'+roleBadge(d)+'<span class="pf-v" title="contratti nel trimestre">'+cQ+'</span></summary><div class="pfold-body">'+cardInner(d)+'</div></details>'; }
 
   /* ── CLUSTER (per zona / per canale-linea) ── */
   function clusterKey(d){ if(clusterBy==="zona") return regKey(d.regione)||"Senza zona"; return d.canale || (d.parent?("Linea "+d.parent):(d.ruolo==="AM"?("Linea "+d.nome):"Senza canale")); }
@@ -1197,7 +1243,7 @@ const Recruiting=(function(){
       const mix=[sd?'<span class="rete-tag SD">'+sd+' SD</span>':'',atd?'<span class="rete-tag ATD">'+atd+' ATD</span>':''].filter(Boolean).join(" ");
       return '<div class="pyr-tier '+t.cls+'"><div class="pyr-h"><div style="min-width:0"><div class="pt">'+esc(t.label)+'</div><div class="pn" style="display:flex;gap:6px;margin-top:4px">'+mix+'</div></div>'+
         '<div class="pv"><div style="text-align:right"><b>'+ppl.length+'</b> <span>persone</span></div><div style="text-align:right"><b style="color:var(--brand)">'+contr+'</b> <span>contratti '+esc(hzLabel())+'</span></div></div></div>'+
-        '<div class="pyr-body"><div class="cards">'+ppl.map(card).join("")+'</div></div></div>';
+        '<div class="pyr-body"><div class="pfolds">'+ppl.map(personFold).join("")+'</div></div></div>';
     }).filter(Boolean).join("");
     $("#clusters").innerHTML=html?'<div class="pyr">'+html+'</div>':'<div class="empty">Nessuna persona.</div>';
   }
@@ -1220,7 +1266,7 @@ const Recruiting=(function(){
         '<div class="cl-m att"><b>'+att+'</b><span>contratti</span></div>'+
         '<div class="cl-m"><b>'+(avgStage).toFixed(1)+'</b><span>fase media</span></div>'+
         '<div class="cl-roles" style="align-self:center">'+roles+'</div></div></summary>'+
-        '<div class="cl-body"><div class="cards">'+ppl.map(card).join("")+'</div></div></details>';
+        '<div class="cl-body"><div class="pfolds">'+ppl.map(personFold).join("")+'</div></div></details>';
     }).join("");
     $("#clusters").innerHTML=html||'<div class="empty">Nessuna persona.</div>';
   }
