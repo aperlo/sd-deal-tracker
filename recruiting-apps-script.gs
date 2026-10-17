@@ -37,8 +37,10 @@ const TAB_POTENZIALE  = "Potenziale";    // quota retail per regione
 const HEAD_RECRUITING = [
   "ID","Nome","Cognome","Ruolo","Tipo contratto","Tipo ingaggio","Citta","Regione",
   "AM riferimento","Fase","Data fase","Data ingaggio","Diretti","Capacita","Agenti",
-  "Canale","On dal","Off dal"
+  "Canale","On dal","Off dal",
+  "Esclusivita","Altri mandati","Note CRM"
 ];
+// Esclusivita: "Esclusivo" (solo con noi) | "Multi-mandato" (anche con altri)
 // Tipo contratto (compenso): A = Sales · B = Agency · C = Override Mng (AM)
 const HEAD_ATTIVAZIONI = ["AgenteID","Mese","Attivazioni"];
 const HEAD_POTENZIALE  = ["Regione","Retail"];
@@ -97,7 +99,10 @@ function leggiRecruiting_() {
         canale: String(r[15] || "").trim(),
         onDal: toISO_(r[16]),
         offDal: toISO_(r[17]),
-        attivo: !toISO_(r[17])
+        attivo: !toISO_(r[17]),
+        esclusivita: String(r[18] || "").trim(),
+        altriMandati: String(r[19] || "").trim(),
+        noteCrm: String(r[20] || "").trim()
       });
     }
   }
@@ -223,8 +228,10 @@ function popolaRete() {
   t.getRange(1, 1, 1, HEAD_RECRUITING.length).setValues([HEAD_RECRUITING])
     .setFontWeight("bold").setBackground("#111827").setFontColor("#E8ECFF");
   t.setFrozenRows(1);
-  t.getRange(2, 1, ROSTER_NOTO.length, HEAD_RECRUITING.length).setValues(ROSTER_NOTO);
-  Logger.log("Rete popolata: " + ROSTER_NOTO.length + " persone (AM + Agency + Sales).");
+  // completa ogni riga con i campi CRM lite (Esclusivita, Altri mandati, Note CRM)
+  const rows = ROSTER_NOTO.map(function(r){ return r.concat(["Esclusivo", "", ""]); });
+  t.getRange(2, 1, rows.length, HEAD_RECRUITING.length).setValues(rows);
+  Logger.log("Rete popolata: " + rows.length + " persone (AM + Agency + Sales).");
 }
 
 // Data di "accensione" (oggi). Modificabile per singola persona nel foglio.
