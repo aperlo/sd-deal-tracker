@@ -651,3 +651,149 @@ function fmtDataIt_(v) {
 function testApiVendite() {
   Logger.log(doGet({}).getContent());
 }
+
+
+/* ████████████████████████████████████████████████████████████
+   ██  MAIL MENSILE AI SALES — ADDITIVA                        ██
+   ██  Recap del mese chiuso + target del mese in corso.       ██
+   ██  Target = media azienda/sales + metà del divario da      ██
+   ██  recuperare (chi è sopra media mantiene). Coerente col    ██
+   ██  cruscotto. In MODO_TEST tutto va a te (max campioni).    ██
+   ████████████████████████████████████████████████████████████ */
+
+const RESP_RETE_NOME = "Andrea Perlo";   // responsabile di rete: escluso dall'invio personale
+const MAIL_MENSILE_MAX_TEST = 3;         // in MODO_TEST invia solo N campioni (evita il flood)
+// FASE TEST: le mail mensili NON vanno ai sales. Vanno solo a saleshub + direzione commerciale.
+// Quando sarà ora di andare live: MODO_TEST=false e poi esegui impostaTriggerMailMensile().
+const MAIL_MENSILE_TEST_DEST = [MAIL_DESK, MAIL_DIRCOMM].join(",");
+const MESI_IT = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
+
+function normNome_(s){ return String(s||"").toLowerCase().replace(/\s+/g," ").trim(); }
+function parseDataIt_(v){
+  if (v instanceof Date) return new Date(v.getTime());
+  const s = String(v||"").trim();
+  let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if (m) return new Date(+m[3], +m[2]-1, +m[1]);
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);           if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  const d = new Date(s); return isNaN(d) ? null : d;
+}
+
+/* Funzione principale — da schedulare il giorno 1 di ogni mese. */
+function inviaMailMensileSales(){
+  const dati = apriTab().getDataRange().getValues();
+  if (dati.length < 2){ Logger.log("Mail mensile: nessun dato."); return; }
+
+  const now = new Date();
+  const refM = (now.getMonth()+11)%12;                       // mese appena chiuso
+  const refY = now.getMonth()===0 ? now.getFullYear()-1 : now.getFullYear();
+  const curM = now.getMonth(), curY = now.getFullYear();     // mese in corso (target)
+  const pmM = (refM+11)%12, pmY = refM===0 ? refY-1 : refY;  // mese prima del ref (per il confronto)
+
+  const rows = [];
+  for (let i=1;i<dati.length;i++){
+    const r = dati[i]; if (!r[0] && !r[1]) continue;
+    const d = parseDataIt_(r[1]); if (!d) continue;
+    rows.push({ d:d, tipo:String(r[3]||"").trim(), agente:String(r[4]||"").trim(), email:String(r[15]||"").trim() });
+  }
+  if (!rows.length){ Logger.log("Mail mensile: nessuna riga valida."); return; }
+
+  // media azienda (contratti / mesi attivi) e media per singolo sales
+  const mSet = {}; rows.forEach(x=>{ mSet[x.d.getFullYear()+"-"+x.d.getMonth()] = 1; });
+  const mesiAttivi = Object.keys(mSet).length || 1;
+  const mediaMese = rows.length / mesiAttivi;
+  const isSales = x => x.tipo !== "Agenzia" && x.email && normNome_(x.agente) !== normNome_(RESP_RETE_NOME);
+  const salesRows = rows.filter(isSales);
+  const nSales = (new Set(salesRows.map(x=>x.email.toLowerCase()))).size || 1;
+  const B = mediaMese / nSales;
+
+  // raggruppa per email (persona)
+  const perMail = {};
+  salesRows.forEach(x=>{
+    const k = x.email.toLowerCase();
+    if (!perMail[k]) perMail[k] = { email:x.email, nome:x.agente, cur:0, prev:0 };
+    perMail[k].nome = x.agente;
+    if (x.d.getFullYear()===refY && x.d.getMonth()===refM) perMail[k].cur++;
+    if (x.d.getFullYear()===pmY  && x.d.getMonth()===pmM)  perMail[k].prev++;
+  });
+
+  const persone = Object.values(perMail);
+  let inviate = 0;
+  for (let i=0;i<persone.length;i++){
+    if (MODO_TEST && inviate >= MAIL_MENSILE_MAX_TEST) break;   // in test: solo N campioni
+    const p = persone[i];
+    const cur = p.cur;
+    const target = cur >= B ? Math.max(cur, Math.round(B)) : Math.round(B + (B-cur)*0.5);
+    const rec = Math.max(0, target - cur);
+    const dest = MODO_TEST ? MAIL_MENSILE_TEST_DEST : p.email;
+    inviaMailMensileUno_(p, cur, p.prev, B, target, rec, refM, refY, curM, curY, dest);
+    inviate++;
+  }
+  Logger.log("Mail mensili inviate: " + inviate + " / " + persone.length + (MODO_TEST ? "  (TEST -> " + MAIL_MENSILE_TEST_DEST + ")" : ""));
+}
+
+function inviaMailMensileUno_(p, cur, prev, B, target, rec, refM, refY, curM, curY, dest){
+  const mese       = MESI_IT[refM].charAt(0).toUpperCase() + MESI_IT[refM].slice(1) + " " + refY;
+  const meseTarget = MESI_IT[curM].charAt(0).toUpperCase() + MESI_IT[curM].slice(1) + " " + curY;
+  const nome   = (String(p.nome||"").split(" ")[0]) || "collega";
+  const delta  = prev > 0 ? Math.round((cur-prev)/prev*100) : null;
+  const dTxt   = delta==null ? "n.d." : (delta>0?"+":"") + delta + "%";
+  const dCol   = delta==null ? "#8A918D" : (delta>=0 ? "#3FD9B3" : "#FF6B6B");
+  const sopra  = cur >= B;
+  const oggetto = (MODO_TEST ? "[TEST] " : "") + "Il tuo mese di " + MESI_IT[refM] + " — Sales Design";
+
+  const tile = (lbl,val,col) =>
+    '<td width="33%" style="padding:6px;"><table width="100%" bgcolor="#151F1D" style="background-color:#151F1D;border:1px solid #2E3A38;border-radius:10px;"><tr><td style="padding:14px 10px;text-align:center;">' +
+      '<div style="color:' + col + ';font-size:26px;font-weight:800;line-height:1;">' + val + '</div>' +
+      '<div style="color:#8A918D;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:6px;">' + lbl + '</div>' +
+    '</td></tr></table></td>';
+
+  const html =
+  '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0F1716;padding:20px 0;"><tr><td align="center">' +
+  '<table role="presentation" width="560" cellpadding="0" cellspacing="0" bgcolor="#0F1716" style="max-width:560px;background-color:#0F1716;border-radius:14px;overflow:hidden;border:1px solid #2E3A38;font-family:Poppins,Arial,sans-serif;">' +
+    '<tr><td bgcolor="#1C2624" style="background-color:#1C2624;border-bottom:3px solid #FF941A;padding:20px 26px;">' +
+      '<table width="100%"><tr><td style="color:#FF941A;font-weight:700;font-size:17px;">Sales Design</td>' +
+      '<td align="right" style="color:#B8BFBB;font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;">Report mensile</td></tr></table></td></tr>' +
+    '<tr><td bgcolor="#0F1716" style="background-color:#0F1716;padding:24px 26px 6px;">' +
+      '<div style="color:#FFFFFF;font-size:20px;font-weight:700;">Ciao ' + nome + ',</div>' +
+      '<div style="color:#C8CFCB;font-size:13px;line-height:1.6;margin-top:6px;">ecco il tuo riepilogo di <strong style="color:#FFFFFF;">' + mese + '</strong> e l\'obiettivo per <strong style="color:#FF941A;">' + meseTarget + '</strong>.</div></td></tr>' +
+    '<tr><td bgcolor="#0F1716" style="background-color:#0F1716;padding:14px 20px 4px;"><table width="100%"><tr>' +
+      tile("Contratti " + MESI_IT[refM], cur, "#FF941A") +
+      tile("vs mese prec.", dTxt, dCol) +
+      tile("Media azienda", B.toFixed(1), "#60A5FA") +
+    '</tr></table></td></tr>' +
+    '<tr><td bgcolor="#0F1716" style="background-color:#0F1716;padding:10px 26px 4px;">' +
+      '<table width="100%" bgcolor="#16302A" style="background-color:#16302A;border:1px solid #1F6B55;border-radius:12px;"><tr><td style="padding:18px 20px;">' +
+        '<div style="color:#3FD9B3;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Il tuo target · ' + meseTarget + '</div>' +
+        '<div style="color:#FFFFFF;font-size:34px;font-weight:800;line-height:1;margin-top:6px;">' + target + ' <span style="font-size:14px;color:#A8B0AC;font-weight:600;">contratti</span></div>' +
+        (rec > 0
+          ? '<div style="color:#FFC24D;font-size:13px;margin-top:8px;">Da recuperare: <strong>+' + rec + '</strong> rispetto al mese scorso.</div>'
+          : '<div style="color:#3FD9B3;font-size:13px;margin-top:8px;">Sei sopra la media: mantieni il ritmo. 💪</div>') +
+      '</td></tr></table></td></tr>' +
+    '<tr><td bgcolor="#0F1716" style="background-color:#0F1716;padding:16px 26px 6px;">' +
+      '<div style="color:#C8CFCB;font-size:13px;line-height:1.6;">' +
+        (sopra ? 'Ottimo mese: hai chiuso <strong style="color:#FFFFFF;">' + cur + '</strong> contratti, sopra la media della rete. '
+               : 'Hai chiuso <strong style="color:#FFFFFF;">' + cur + '</strong> contratti. Con un piccolo recupero torni in media rete. ') +
+        'Il target è calcolato sulla media aziendale per venditore più il recupero da fare.</div></td></tr>' +
+    '<tr><td bgcolor="#0A0F0E" style="background-color:#0A0F0E;border-top:1px solid #2E3A38;padding:16px 26px;text-align:center;">' +
+      '<div style="color:#8A918D;font-size:11px;line-height:1.7;"><strong style="color:#C8CFCB;">Sales Design S.r.l.</strong><br>Daily Deal Tracker · report automatico mensile</div></td></tr>' +
+  '</table></td></tr></table>';
+
+  const testo = "Ciao " + nome + ",\n" +
+    "il tuo " + mese + ": " + cur + " contratti (" + dTxt + " vs mese prec.).\n" +
+    "Media azienda/sales: " + B.toFixed(1) + "\n" +
+    "Target " + meseTarget + ": " + target + (rec>0 ? ("  (recupera +" + rec + ")") : "  (sei sopra media)") + "\n\n" +
+    "Sales Design — Daily Deal Tracker";
+
+  MailApp.sendEmail(dest, oggetto, testo, { htmlBody: html, name: MITTENTE });
+}
+
+/* Trigger: esegui UNA VOLTA per schedulare l'invio il giorno 1 di ogni mese alle 9. */
+function impostaTriggerMailMensile(){
+  ScriptApp.getProjectTriggers().forEach(function(t){
+    if (t.getHandlerFunction() === "inviaMailMensileSales") ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger("inviaMailMensileSales").timeBased().onMonthDay(1).atHour(9).create();
+  Logger.log("Trigger mail mensile impostato: giorno 1 di ogni mese, ore 9:00.");
+}
+
+/* Test manuale: in MODO_TEST invia al massimo MAIL_MENSILE_MAX_TEST campioni a MAIL_TEST_DEST. */
+function testMailMensile(){ inviaMailMensileSales(); }
