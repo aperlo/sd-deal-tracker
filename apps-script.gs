@@ -599,18 +599,59 @@ function doGet(e) {
   }
 }
 
+/* ---- Provincia: nomi città/provincia -> sigla (+ sigle valide) ---- */
+const PROV_NOMI = {
+  "AGRIGENTO":"AG","ALESSANDRIA":"AL","ANCONA":"AN","AOSTA":"AO","AREZZO":"AR","ASCOLI PICENO":"AP","ASTI":"AT","AVELLINO":"AV",
+  "BARI":"BA","BARLETTA":"BT","BELLUNO":"BL","BENEVENTO":"BN","BERGAMO":"BG","BIELLA":"BI","BOLOGNA":"BO","BOLZANO":"BZ",
+  "BRESCIA":"BS","BRINDISI":"BR","CAGLIARI":"CA","CALTANISSETTA":"CL","CAMPOBASSO":"CB","CASERTA":"CE","CATANIA":"CT",
+  "CATANZARO":"CZ","CHIETI":"CH","COMO":"CO","COSENZA":"CS","CREMONA":"CR","CROTONE":"KR","CUNEO":"CN","ENNA":"EN",
+  "FERMO":"FM","FERRARA":"FE","FIRENZE":"FI","FOGGIA":"FG","FORLI":"FC","FROSINONE":"FR","GENOVA":"GE","GORIZIA":"GO",
+  "GROSSETO":"GR","IMPERIA":"IM","ISERNIA":"IS","L AQUILA":"AQ","LAQUILA":"AQ","AQUILA":"AQ","LA SPEZIA":"SP","SPEZIA":"SP",
+  "LATINA":"LT","LECCE":"LE","LECCO":"LC","LIVORNO":"LI","LODI":"LO","LUCCA":"LU","MACERATA":"MC","MANTOVA":"MN",
+  "MASSA":"MS","MASSA CARRARA":"MS","MATERA":"MT","MESSINA":"ME","MILANO":"MI","MODENA":"MO","MONZA":"MB","NAPOLI":"NA",
+  "NOVARA":"NO","NUORO":"NU","ORISTANO":"OR","PADOVA":"PD","PALERMO":"PA","PARMA":"PR","PAVIA":"PV","PERUGIA":"PG",
+  "PESARO":"PU","PESCARA":"PE","PIACENZA":"PC","PISA":"PI","PISTOIA":"PT","PORDENONE":"PN","POTENZA":"PZ","PRATO":"PO",
+  "RAGUSA":"RG","RAVENNA":"RA","REGGIO CALABRIA":"RC","REGGIO EMILIA":"RE","RIETI":"RI","RIMINI":"RN","ROMA":"RM",
+  "ROVIGO":"RO","SALERNO":"SA","SASSARI":"SS","SAVONA":"SV","SIENA":"SI","SIRACUSA":"SR","SONDRIO":"SO","TARANTO":"TA",
+  "TERAMO":"TE","TERNI":"TR","TORINO":"TO","TRAPANI":"TP","TRENTO":"TN","TREVISO":"TV","TRIESTE":"TS","UDINE":"UD",
+  "VARESE":"VA","VENEZIA":"VE","VERBANIA":"VB","VERCELLI":"VC","VERONA":"VR","VIBO VALENTIA":"VV","VICENZA":"VI","VITERBO":"VT",
+  // città non capoluogo frequenti
+  "VENTIMIGLIA":"IM","SANREMO":"IM","MONCALIERI":"TO","POZZUOLI":"NA","GALLARATE":"VA","LEGNANO":"MI"
+};
+let _provSet = null;
+function provSet_(){ if(!_provSet){ _provSet={}; for(const k in PROV_NOMI) _provSet[PROV_NOMI[k]]=1; } return _provSet; }
+function normalizeProvincia_(v){
+  let s = String(v==null?"":v).trim().toUpperCase();
+  if(!s) return "";
+  s = s.replace(/[ÀÁÂ]/g,"A").replace(/[ÈÉÊ]/g,"E").replace(/[ÌÍÎ]/g,"I").replace(/[ÒÓÔ]/g,"O").replace(/[ÙÚÛ]/g,"U").replace(/[’'`]/g," ");
+  if(/^[A-Z]{2}$/.test(s) && provSet_()[s]) return s;      // già sigla valida
+  const key = s.replace(/[^A-Z ]/g," ").replace(/\s+/g," ").trim();
+  if(PROV_NOMI[key]) return PROV_NOMI[key];
+  const first = key.split(" ")[0];
+  if(first && PROV_NOMI[first]) return PROV_NOMI[first];
+  return "";
+}
+
 /* ---- Lettura VENDITE dal tab Master (sola lettura) ---- */
 function leggiSales_() {
   const doc = SpreadsheetApp.openById(SHEET_ID);
   const tab = doc.getSheetByName(NOME_TAB);
   if (!tab || tab.getLastRow() < 2) return [];
   const dati = tab.getDataRange().getValues();
+  // header-driven per Provincia (anche colonne aggiunte a mano) e Area Manager
+  const head = (dati[0] || []).map(h => String(h || "").trim().toLowerCase());
+  const provCols = [];
+  head.forEach((h, ix) => { if (h.indexOf("provincia") >= 0 || h === "prov") provCols.push(ix); });
+  if (provCols.indexOf(13) < 0) provCols.push(13);          // fallback posizione storica
+  let amCol = head.indexOf("area manager"); if (amCol < 0) amCol = 16;
   const out = [];
   for (let i = 1; i < dati.length; i++) {
     const r = dati[i];
     if (!r[0] && !r[1]) continue;
     const tipo = String(r[3] || "").trim();
     const rete = tipo === "Area" ? "ATD" : "SD";   // Direct+Agenzia = SD · Area = ATD (AT)
+    let prov = "";
+    for (let c = 0; c < provCols.length; c++) { const n = normalizeProvincia_(r[provCols[c]]); if (n) { prov = n; break; } }
     out.push({
       ts:         String(r[0] || ""),
       data:       fmtDataIt_(r[1]),
@@ -626,8 +667,8 @@ function leggiSales_() {
       pricing:    String(r[10] || ""),
       tariffaPay: String(r[11] || ""),
       tariffaDom: String(r[12] || ""),
-      provincia:  String(r[13] || "").toUpperCase(),
-      am:         String(r[16] || "")      // (P) Area Manager di competenza
+      provincia:  prov,                      // sigla normalizzata (da sigla o da nome, in qualunque colonna)
+      am:         String(r[amCol] || "")     // (P) Area Manager di competenza
     });
   }
   return out;
@@ -688,11 +729,15 @@ function inviaMailMensileSales(){
   const curM = now.getMonth(), curY = now.getFullYear();     // mese in corso (target)
   const pmM = (refM+11)%12, pmY = refM===0 ? refY-1 : refY;  // mese prima del ref (per il confronto)
 
+  const head = (dati[0] || []).map(h => String(h || "").trim().toLowerCase());
+  let emailCol = head.indexOf("email agente");
+  if (emailCol < 0) emailCol = head.findIndex(h => h.indexOf("mail") >= 0);
+  if (emailCol < 0) emailCol = 15;
   const rows = [];
   for (let i=1;i<dati.length;i++){
     const r = dati[i]; if (!r[0] && !r[1]) continue;
     const d = parseDataIt_(r[1]); if (!d) continue;
-    rows.push({ d:d, tipo:String(r[3]||"").trim(), agente:String(r[4]||"").trim(), email:String(r[15]||"").trim() });
+    rows.push({ d:d, tipo:String(r[3]||"").trim(), agente:String(r[4]||"").trim(), email:String(r[emailCol]||"").trim() });
   }
   if (!rows.length){ Logger.log("Mail mensile: nessuna riga valida."); return; }
 

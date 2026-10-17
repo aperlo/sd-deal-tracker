@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
 <meta charset="UTF-8">
@@ -512,6 +512,16 @@ document.getElementById('dealForm').addEventListener('submit', async function(e)
   btn.textContent = 'Registra deal â†’';
 });
 
+</script>
+<script>/*sd-upper*/
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('input,textarea').forEach(function(el){
+    var t=(el.getAttribute('type')||'text').toLowerCase();
+    if(t==='email'||t==='number'||t==='password'||t==='checkbox'||t==='radio'||t==='tel'||/mail/i.test(el.id||'')||/mail/i.test(el.name||''))return;
+    el.style.textTransform='uppercase';
+    el.addEventListener('input',function(){var s=el.selectionStart,e=el.selectionEnd,u=el.value.toUpperCase();if(u!==el.value){el.value=u;try{el.setSelectionRange(s,e);}catch(_){}}});
+  });
+});
 </script>
 </body>
 </html>

@@ -927,7 +927,28 @@ const Sales=(function(){
   const C_CANALE={"Direct Sales":"#FF8A1E","WeComm":"#FFA94D","Fiditech":"#E0760F","Punto Semplice":"#FFC27A","Granda Solutions":"#C96510","Team Tutino":"#FF7A00","Area Nord":"#8B7CFF","Area Centro":"#5AA8FF","Area Sud":"#A99BFF"};
   const TIPO_C={Direct:"#FF8A1E",Agenzia:"#E0760F",Area:"#8B7CFF"};
   const reteColor=re=>re==="ATD"?"#8B7CFF":"#FF8A1E";
-  const REGMAP={TO:"Piemonte",MI:"Lombardia",RM:"Lazio",NA:"Campania",BO:"Emilia-R.",FI:"Toscana",VE:"Veneto",GE:"Liguria",PA:"Sicilia",BA:"Puglia",CN:"Piemonte",AT:"Piemonte",VR:"Veneto",PD:"Veneto",CT:"Sicilia",SA:"Campania",BS:"Lombardia",BG:"Lombardia",VI:"Veneto",LE:"Puglia"};
+  const REGMAP={
+    TO:"Piemonte",VC:"Piemonte",NO:"Piemonte",CN:"Piemonte",AT:"Piemonte",AL:"Piemonte",BI:"Piemonte",VB:"Piemonte",
+    AO:"Valle d'Aosta",
+    VA:"Lombardia",CO:"Lombardia",SO:"Lombardia",MI:"Lombardia",BG:"Lombardia",BS:"Lombardia",PV:"Lombardia",CR:"Lombardia",MN:"Lombardia",LC:"Lombardia",LO:"Lombardia",MB:"Lombardia",
+    BZ:"Trentino-A.A.",TN:"Trentino-A.A.",
+    VR:"Veneto",VI:"Veneto",BL:"Veneto",TV:"Veneto",VE:"Veneto",PD:"Veneto",RO:"Veneto",
+    UD:"Friuli-V.G.",GO:"Friuli-V.G.",TS:"Friuli-V.G.",PN:"Friuli-V.G.",
+    IM:"Liguria",SV:"Liguria",GE:"Liguria",SP:"Liguria",
+    PC:"Emilia-R.",PR:"Emilia-R.",RE:"Emilia-R.",MO:"Emilia-R.",BO:"Emilia-R.",FE:"Emilia-R.",RA:"Emilia-R.",FC:"Emilia-R.",RN:"Emilia-R.",
+    MS:"Toscana",LU:"Toscana",PT:"Toscana",FI:"Toscana",LI:"Toscana",PI:"Toscana",AR:"Toscana",SI:"Toscana",GR:"Toscana",PO:"Toscana",
+    PG:"Umbria",TR:"Umbria",
+    PU:"Marche",AN:"Marche",MC:"Marche",AP:"Marche",FM:"Marche",
+    VT:"Lazio",RI:"Lazio",RM:"Lazio",LT:"Lazio",FR:"Lazio",
+    AQ:"Abruzzo",TE:"Abruzzo",PE:"Abruzzo",CH:"Abruzzo",
+    CB:"Molise",IS:"Molise",
+    CE:"Campania",BN:"Campania",NA:"Campania",AV:"Campania",SA:"Campania",
+    FG:"Puglia",BA:"Puglia",TA:"Puglia",BR:"Puglia",LE:"Puglia",BT:"Puglia",
+    PZ:"Basilicata",MT:"Basilicata",
+    CS:"Calabria",CZ:"Calabria",RC:"Calabria",KR:"Calabria",VV:"Calabria",
+    TP:"Sicilia",PA:"Sicilia",ME:"Sicilia",AG:"Sicilia",CL:"Sicilia",EN:"Sicilia",CT:"Sicilia",RG:"Sicilia",SR:"Sicilia",
+    SS:"Sardegna",NU:"Sardegna",CA:"Sardegna",OR:"Sardegna",SU:"Sardegna"
+  };
   const $=id=>document.getElementById(id);
   const pd=s=>{const p=String(s).split("/");return p.length===3?new Date(+p[2],+p[1]-1,+p[0]):null;};
   const grp=(arr,k)=>arr.reduce((a,r)=>{const x=r[k]||"—";a[x]=(a[x]||0)+1;return a;},{});
