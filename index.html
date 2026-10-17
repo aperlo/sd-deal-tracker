@@ -44,13 +44,13 @@ a{color:inherit;text-decoration:none}
 .muted{color:var(--muted)}
 
 /* ── TOP BAR ───────────────────────────────────────────── */
-.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:18px;padding:0 22px;height:64px;
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:18px;padding:0 max(22px,calc((100% - 1380px)/2));height:74px;
   background:rgba(13,15,20,.78);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid var(--line)}
-.brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
-.logo{width:36px;height:36px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+.brand{display:flex;align-items:center;gap:13px;flex-shrink:0}
+.logo{width:44px;height:44px;border-radius:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
   background:#0f1320;overflow:hidden;box-shadow:0 8px 20px -6px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06)}
-.logo svg{width:30px;height:30px}
-.brand-t{font-size:15px;font-weight:700;line-height:1.15}
+.logo svg{width:37px;height:37px}
+.brand-t{font-size:16.5px;font-weight:700;line-height:1.15}
 .brand-s{font-size:11.5px;color:var(--muted);margin-top:1px}
 .tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px}
 .tab{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;padding:9px 17px;border-radius:999px;
@@ -293,7 +293,7 @@ details.fold[open] summary::after{content:"−"}
 .fold.econ>summary::after{content:"+";float:none;color:var(--mint);font-weight:800;font-size:18px}
 .fold.econ[open]>summary::after{content:"−"}
 details.fold>div{padding:2px 0 16px}
-.banner{display:none;align-items:center;gap:10px;margin:0;padding:12px 22px;background:rgba(255,194,77,.09);border-bottom:1px solid rgba(255,194,77,.22);color:var(--warn);font-size:13px}
+.banner{display:none;align-items:center;gap:10px;margin:0;padding:12px max(22px,calc((100% - 1380px)/2));background:rgba(255,194,77,.09);border-bottom:1px solid rgba(255,194,77,.22);color:var(--warn);font-size:13px}
 .banner.on{display:flex}
 .banner code{font-family:ui-monospace,monospace;color:#fff}
 
@@ -322,7 +322,7 @@ details.fold>div{padding:2px 0 16px}
 @media(max-width:860px){.exec{grid-template-columns:1fr 1fr}.exec .alerts{grid-column:span 2;justify-content:flex-start}}
 
 /* ── FASCIA FILTRI FISSA (globale) ── */
-.gbar{position:sticky;top:64px;z-index:40;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:11px 22px;background:rgba(13,15,20,.9);backdrop-filter:saturate(150%) blur(12px);border-bottom:1px solid var(--line)}
+.gbar{position:sticky;top:74px;z-index:40;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:11px max(22px,calc((100% - 1380px)/2));background:rgba(13,15,20,.9);backdrop-filter:saturate(150%) blur(12px);border-bottom:1px solid var(--line)}
 .gb-group{display:flex;align-items:center;gap:8px}
 .gb-group>label{font-size:10.5px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.06em}
 .gb-sep{width:1px;height:24px;background:var(--line2)}
@@ -361,6 +361,128 @@ details.fold>div{padding:2px 0 16px}
 #view-recruiting .perf .pm b{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
 #view-recruiting .perf .pm span{font-size:10px;color:var(--faint);margin-top:2px;white-space:nowrap}
 
+/* ═══ TEMA CHIARO (toggle bianco/nero · B) ═══ */
+:root[data-theme="light"]{
+  --bg:#F4F6FA; --surface:#FFFFFF; --surface2:#F0F3F8; --surface3:#E7ECF3;
+  --line:rgba(16,22,40,.09); --line2:rgba(16,22,40,.17);
+  --text:#121722; --muted:#5A6577; --faint:#8A93A3;
+  --brand-s:rgba(255,138,30,.16); --violet-s:rgba(139,124,255,.18); --mint-s:rgba(52,216,168,.18); --sky-s:rgba(90,168,255,.18);
+  --shadow:0 10px 30px -22px rgba(16,22,40,.4);
+  color-scheme:light;
+}
+:root[data-theme="light"] body{background:
+  radial-gradient(1200px 560px at 82% -12%,rgba(255,138,30,.08),transparent 58%),
+  radial-gradient(900px 540px at -5% 2%,rgba(139,124,255,.07),transparent 55%),var(--bg);}
+:root[data-theme="light"] .topbar{background:rgba(255,255,255,.82)}
+:root[data-theme="light"] .gbar{background:rgba(244,246,250,.9)}
+:root[data-theme="light"] .nbar,:root[data-theme="light"] .ptrack,:root[data-theme="light"] .mini,
+:root[data-theme="light"] #view-recruiting .track{background:#E2E7EF}
+:root[data-theme="light"] .tip,:root[data-theme="light"] #gate{background:rgba(255,255,255,.98)}
+:root[data-theme="light"] .geo-tot{background:rgba(255,255,255,.72)!important}
+:root[data-theme="light"] .help-panel,:root[data-theme="light"] .hz-panel{box-shadow:0 22px 54px -24px rgba(16,22,40,.4)}
+
+/* ═══ REFRESH · icona dinamica (C) ═══ */
+.btn.spin{color:var(--brand);border-color:var(--brand-s)}
+.btn.spin svg{animation:spin .8s linear infinite;transform-origin:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══ FLASH regione all'hover (L) ═══ */
+#view-recruiting .reg.flash{animation:regflash .5s ease}
+@keyframes regflash{0%{filter:none}28%{filter:drop-shadow(0 0 13px var(--mint)) brightness(1.55)}100%{filter:none}}
+
+/* ═══ PIRAMIDE ACQUARIO · fasi recruiting (D) ═══ */
+#view-recruiting .aqua{position:relative;width:100%;max-width:420px;margin:6px auto 4px;aspect-ratio:1.3/1;
+  clip-path:polygon(50% 0,100% 100%,0 100%);background:color-mix(in srgb,var(--violet) 7%,transparent);display:flex;flex-direction:column}
+#view-recruiting .aqua .tier{position:relative;flex:1;border-top:1px dashed var(--line2);display:flex;align-items:center;justify-content:center;overflow:hidden}
+#view-recruiting .aqua .tier:first-child{border-top:none}
+#view-recruiting .aqua .wat{position:absolute;left:0;right:0;bottom:0;
+  background:linear-gradient(180deg,rgba(111,239,203,.78),rgba(90,168,255,.82) 45%,rgba(139,124,255,.9));
+  box-shadow:0 0 22px -3px rgba(90,168,255,.55);transition:height .9s cubic-bezier(.2,.8,.2,1)}
+#view-recruiting .aqua .wat::before{content:"";position:absolute;left:-60%;right:-60%;top:-5px;height:10px;
+  background:radial-gradient(circle,rgba(255,255,255,.55),transparent 62%);animation:wave 3.4s ease-in-out infinite}
+@keyframes wave{50%{transform:translateX(7%)}}
+#view-recruiting .aqua .tl{position:relative;z-index:2;text-align:center;font-size:10px;font-weight:700;color:#fff;
+  text-shadow:0 1px 4px rgba(0,0,0,.55);line-height:1.15;padding:0 8px}
+#view-recruiting .aqua .tl .n{font-size:17px;display:block;letter-spacing:-.02em}
+#view-recruiting .aqua-leg{display:flex;flex-direction:column;gap:9px;justify-content:center}
+#view-recruiting .aqua-leg .al{display:flex;align-items:center;gap:10px;font-size:12px}
+#view-recruiting .aqua-leg .al .d{width:22px;height:9px;border-radius:3px;flex-shrink:0}
+#view-recruiting .aqua-leg .al b{font-variant-numeric:tabular-nums}
+#view-recruiting .aqua-leg .al span{color:var(--muted)}
+.aqua-wrap{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch}
+@media(max-width:620px){.aqua-wrap{grid-template-columns:1fr}}
+
+/* ═══ TOP performer (I) ═══ */
+#view-recruiting .tops{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px;margin-bottom:6px}
+#view-recruiting .topc{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--brand-s),transparent 62%),var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+#view-recruiting .topc .medal{font-size:22px;line-height:1}
+#view-recruiting .topc .tc-l{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:700}
+#view-recruiting .topc .tc-n{font-size:14px;font-weight:700;overflow-wrap:anywhere;line-height:1.2}
+#view-recruiting .topc .tc-v{margin-left:auto;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--brand)}
+#view-recruiting .topc.am .tc-v{color:var(--violet)} #view-recruiting .topc.ag .tc-v{color:var(--mint)}
+
+/* ═══ PIRAMIDE schede persone (G) ═══ */
+#view-recruiting .pyr{display:flex;flex-direction:column;gap:14px;align-items:center}
+#view-recruiting .pyr-tier{width:100%;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+#view-recruiting .pyr-tier.am{max-width:62%} #view-recruiting .pyr-tier.ag{max-width:82%}
+@media(max-width:860px){#view-recruiting .pyr-tier.am,#view-recruiting .pyr-tier.ag{max-width:100%}}
+#view-recruiting .pyr-h{display:flex;align-items:center;gap:12px;padding:13px 17px;border-bottom:1px solid var(--line)}
+#view-recruiting .pyr-h .pt{font-size:14.5px;font-weight:800}
+#view-recruiting .pyr-h .pn{font-size:11.5px;color:var(--faint)}
+#view-recruiting .pyr-h .pv{margin-left:auto;display:flex;gap:14px;align-items:baseline}
+#view-recruiting .pyr-h .pv b{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+#view-recruiting .pyr-h .pv span{font-size:10.5px;color:var(--faint)}
+#view-recruiting .pyr-body{padding:14px 17px}
+#view-recruiting .pcard .pid{font-size:10.5px;color:var(--faint);font-weight:700;font-variant-numeric:tabular-nums}
+#view-recruiting .rete-tag{font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;letter-spacing:.03em}
+#view-recruiting .rete-tag.SD{background:var(--brand-s);color:var(--brand)} #view-recruiting .rete-tag.ATD{background:var(--violet-s);color:var(--violet)}
+
+/* ═══ TOTALE contratti sulla mappa (O) ═══ */
+#view-recruiting .geo-tot{position:absolute;top:14px;left:14px;z-index:2;pointer-events:none;
+  background:rgba(13,15,20,.55);backdrop-filter:blur(7px);border:1px solid var(--line2);border-radius:14px;padding:11px 15px}
+#view-recruiting .geo-tot b{display:block;font-weight:800;color:var(--brand);line-height:.98;letter-spacing:-.02em;
+  text-shadow:0 0 18px color-mix(in srgb,var(--brand) 40%,transparent)}
+#view-recruiting .geo-tot .gt-sub{font-size:10.5px;color:var(--muted);margin-top:4px}
+#view-recruiting .geo-tot .gt-sub b{display:inline;font-size:12px;color:var(--text)}
+
+/* ═══ righe espandibili (Q) ═══ */
+#view-recruiting .xrow{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02);overflow:hidden}
+#view-recruiting .xrow>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:12px;padding:13px 14px}
+#view-recruiting .xrow>summary::-webkit-details-marker{display:none}
+#view-recruiting .xrow>summary::after{content:"";margin-left:4px;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .2s}
+#view-recruiting .xrow[open]>summary::after{transform:rotate(45deg)}
+#view-recruiting .xrow>summary:hover{background:var(--mint-s)}
+#view-recruiting .xrow .nm{min-width:0;flex:1;font-size:13px}
+#view-recruiting .xrow .v{font-weight:700;color:var(--violet);font-variant-numeric:tabular-nums}
+#view-recruiting .xbody{padding:4px 14px 14px;border-top:1px solid var(--line)}
+#view-recruiting .xbody .xr{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:12.5px;border-bottom:1px solid var(--line)}
+#view-recruiting .xbody .xr:last-child{border-bottom:none}
+#view-recruiting .xbody .xr span{color:var(--muted)}
+
+/* ═══ HELP · assistente spiegazioni (F) ═══ */
+.help{position:fixed;left:20px;bottom:20px;z-index:60;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.help-btn{all:unset;cursor:pointer;display:flex;align-items:center;gap:9px;padding:12px 16px;border-radius:999px;font-weight:700;font-size:13px;
+  color:#06201a;background:linear-gradient(145deg,#6FEFCB,var(--mint));box-shadow:0 10px 26px -8px rgba(52,216,168,.6),0 0 16px -4px rgba(52,216,168,.45)}
+.help-btn svg{width:17px;height:17px}
+.help-panel{display:none;flex-direction:column;background:var(--surface);border:1px solid var(--line2);border-radius:16px;
+  width:340px;max-width:calc(100vw - 40px);max-height:72vh;box-shadow:0 22px 54px -22px rgba(0,0,0,.7);overflow:hidden}
+.help-panel.on{display:flex}
+.help-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);font-weight:700;font-size:14px}
+.help-head .hb{width:26px;height:26px;border-radius:8px;background:var(--mint-s);color:var(--mint);display:flex;align-items:center;justify-content:center}
+.help-head .hb svg{width:15px;height:15px}
+.help-head .x{all:unset;cursor:pointer;margin-left:auto;color:var(--muted);font-size:20px;line-height:1;padding:0 4px}
+.help-topics{display:flex;gap:6px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line)}
+.help-topics button{all:unset;cursor:pointer;font-size:11.5px;font-weight:600;padding:6px 11px;border-radius:999px;color:var(--muted);border:1px solid var(--line);transition:.15s}
+.help-topics button:hover{color:var(--text);border-color:var(--line2)}
+.help-topics button[aria-pressed="true"]{color:#06201a;background:var(--mint);border-color:var(--mint)}
+.help-body{padding:15px 16px;overflow-y:auto;font-size:13px;line-height:1.62}
+.help-body h5{font-size:13.5px;margin-bottom:7px;color:var(--mint);display:flex;align-items:center;gap:7px}
+.help-body p{margin-bottom:10px;color:var(--muted)}
+.help-body p:last-child{margin-bottom:0}
+.help-body b{color:var(--text)}
+.help-body .q{font-weight:700;color:var(--text);margin:12px 0 4px}
+@media(max-width:720px){.help{left:14px;bottom:14px}.hz{right:14px;bottom:14px}}
+
 @media(max-width:1000px){.kpis{grid-template-columns:repeat(2,1fr)}.g2,.g3,.models{grid-template-columns:1fr}}
 @media(max-width:720px){.topbar{height:auto;flex-wrap:wrap;padding:12px 14px;gap:10px}.brand-s{display:none}.tabs{order:3;width:100%;justify-content:center}.view{padding:18px 14px 80px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
@@ -394,7 +516,9 @@ details.fold>div{padding:2px 0 16px}
   </div>
   <div class="spacer"></div>
   <div class="status" id="status"><span class="dot" id="statusDot"></span><span id="statusTxt">—</span></div>
-  <button class="btn" id="btnRefresh"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 8A6 6 0 1 1 2.46 4.5H5a.5.5 0 0 0 0-1H1a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 1 0V6.07A7 7 0 1 0 15 8a.5.5 0 0 0-1 0z"/></svg>Aggiorna</button>
+  <button class="btn ghost" id="btnTheme" title="Sfondo chiaro / scuro" aria-label="Cambia tema">
+    <svg id="themeIco" viewBox="0 0 16 16" fill="currentColor"><path d="M6 .8A7.2 7.2 0 1 0 15.2 10 5.6 5.6 0 0 1 6 .8z"/></svg></button>
+  <button class="btn" id="btnRefresh"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 8A6 6 0 1 1 2.46 4.5H5a.5.5 0 0 0 0-1H1a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 1 0V6.07A7 7 0 1 0 15 8a.5.5 0 0 0-1 0z"/></svg><span id="refreshTxt">Aggiorna</span></button>
 </nav>
 
 <div class="banner" id="banner"></div>
@@ -444,7 +568,7 @@ details.fold>div{padding:2px 0 16px}
       <div class="legend" id="legRete"></div>
     </div>
     <div class="card pad">
-      <div class="card-t">Andamento nel periodo</div><div class="card-s">Contratti per giorno</div>
+      <div class="card-t">Andamento nel periodo</div><div class="card-s">Curva attuale vs stesso periodo precedente</div>
       <div class="chart-wrap" style="height:214px;margin-top:12px"><canvas id="cPeriodo"></canvas></div>
     </div>
   </div>
@@ -512,8 +636,9 @@ details.fold>div{padding:2px 0 16px}
       <select id="geoReg" style="display:none;min-width:150px"></select>
       <div class="seg" role="group" aria-label="Colore regioni"><button type="button" id="mode-q" class="m" aria-pressed="true">Presenza</button><button type="button" id="mode-p" aria-pressed="false">Performance</button></div>
       <span class="count" id="mode-note"></span></div></div>
+  <div class="tops" id="topPerf"></div>
   <div class="geo">
-    <div class="card map-wrap" id="map-wrap"><svg id="map" viewBox="0 0 560 600" role="img" aria-label="Mappa Italia"></svg><div class="tip" id="tip"></div><div class="legend" id="mLegend" style="padding:0 8px 8px"></div></div>
+    <div class="card map-wrap" id="map-wrap"><div class="geo-tot" id="geoTot"></div><svg id="map" viewBox="0 0 560 600" role="img" aria-label="Mappa Italia"></svg><div class="tip" id="tip"></div><div class="legend" id="mLegend" style="padding:0 8px 8px"></div></div>
     <div class="card pad"><div class="card-t" id="m-h" style="margin-bottom:12px">Tutta la rete</div><div class="list" id="mlist"></div></div>
   </div>
 
@@ -534,10 +659,20 @@ details.fold>div{padding:2px 0 16px}
 
   <div class="section-h"><div><div class="section-t">Schede persone</div><div class="section-d">Raggruppate per cluster — espandi per vedere le singole schede</div></div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <div class="seg" role="group" aria-label="Raggruppa"><button type="button" id="cl-zona" aria-pressed="true">Per zona</button><button type="button" id="cl-canale" class="m" aria-pressed="false">Per canale</button></div>
+      <div class="seg" role="group" aria-label="Raggruppa"><button type="button" id="cl-piramide" aria-pressed="true">Piramide</button><button type="button" id="cl-zona" class="m" aria-pressed="false">Per zona</button><button type="button" id="cl-canale" class="m" aria-pressed="false">Per canale</button></div>
       <span class="count" id="r-count"></span></div></div>
   <div id="clusters"></div>
 </main>
+
+<!-- ══ ASSISTENTE / SPIEGAZIONI (F) ══ -->
+<div class="help">
+  <div class="help-panel" id="helpPanel" role="dialog" aria-label="Guida al cruscotto">
+    <div class="help-head"><span class="hb"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M6.1 6.1a1.9 1.9 0 1 1 2.6 1.8c-.5.2-.7.5-.7 1v.3" stroke-linecap="round"/><circle cx="8" cy="11.6" r=".5" fill="currentColor" stroke="none"/></svg></span>Guida — chiedi una sezione<button class="x" id="helpClose" aria-label="Chiudi">×</button></div>
+    <div class="help-topics" id="helpTopics"></div>
+    <div class="help-body" id="helpBody"></div>
+  </div>
+  <button class="help-btn" id="helpBtn"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 3.5A1.5 1.5 0 0 1 3.5 2h9A1.5 1.5 0 0 1 14 3.5v6A1.5 1.5 0 0 1 12.5 11H6l-3 2.6V11H3.5A1.5 1.5 0 0 1 2 9.5z" stroke-linejoin="round"/></svg>Come si legge?</button>
+</div>
 
 <script>
 /* ═══ CONFIG — due fonti separate + accesso ═══ */
@@ -546,7 +681,7 @@ const CFG={
   ENDPOINT_RECRUITING: "https://script.google.com/macros/s/AKfycbw5Icd-PVv-8NTOdyWF_12kdoMo6DnmbMhg3acPFff6TlU9X-HNPPkoVL83Z_0vJ5xGwQ/exec",
   SHEET_URL_SALES:     "https://docs.google.com/spreadsheets/d/11_RBtNlb9CeD1eWy5Q_meH571AnJ-TqtpzxYycM6zeM/edit",
   SHEET_URL_RECRUITING:"https://docs.google.com/spreadsheets/d/1BcBewjKcBdc1xSomiGsakxXU_x04DGymCmYWbUh56vo/edit",
-  ACCESS_PASSWORD:     "sd-tracker-2026",                  // password accesso cruscotto ("" = nessuna)
+  ACCESS_PASSWORD:     "@SD26",                            // password accesso cruscotto ("" = nessuna)
   POLL_MS:             0
 };
 const liveSales=()=>!!CFG.ENDPOINT_SALES&&!/INCOLLA/.test(CFG.ENDPOINT_SALES);
@@ -703,7 +838,21 @@ async function loadAll(){
   document.getElementById("openSheet").href=CFG.SHEET_URL_RECRUITING||CFG.SHEET_URL_SALES;
   Sales.render(); Recruiting.ingest();
 }
-document.getElementById("btnRefresh").addEventListener("click",loadAll);
+/* ═══ REFRESH con spinner (C) ═══ */
+async function refreshAll(){ const rb=document.getElementById("btnRefresh"); if(rb)rb.classList.add("spin");
+  try{ await loadAll(); } finally{ if(rb)rb.classList.remove("spin"); } }
+document.getElementById("btnRefresh").addEventListener("click",refreshAll);
+
+/* ═══ TEMA chiaro/scuro (B) ═══ */
+(function(){
+  const root=document.documentElement, btn=document.getElementById("btnTheme"), ico=document.getElementById("themeIco");
+  const SUN='<path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8 .8v2M8 13.2v2M.8 8h2M13.2 8h2M2.9 2.9l1.4 1.4M11.7 11.7l1.4 1.4M13.1 2.9l-1.4 1.4M4.3 11.7l-1.4 1.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/>';
+  const MOON='<path d="M6 .8A7.2 7.2 0 1 0 15.2 10 5.6 5.6 0 0 1 6 .8z"/>';
+  function apply(t){ if(t==="light"){root.setAttribute("data-theme","light");ico.innerHTML=SUN;} else {root.setAttribute("data-theme","dark");ico.innerHTML=MOON;} }
+  let saved="dark"; try{ saved=localStorage.getItem("sd_theme")||"dark"; }catch(e){}
+  apply(saved);
+  btn.addEventListener("click",()=>{ const t=root.getAttribute("data-theme")==="light"?"dark":"light"; apply(t); try{localStorage.setItem("sd_theme",t);}catch(e){} });
+})();
 
 /* ═══ TAB SWITCH ═══ */
 (function(){const map={"tab-sales":"view-sales","tab-rec":"view-recruiting"};
@@ -766,8 +915,26 @@ const Sales=(function(){
     $("nSd").textContent=sd;$("nAtd").textContent=atd;$("nSdBar").style.width=Math.round(sd/tot*100)+"%";$("nAtdBar").style.width=Math.round(atd/tot*100)+"%";
     if(charts.rete)charts.rete.destroy();charts.rete=new Chart($("cRete"),{type:"doughnut",data:{labels:["SD","ATD"],datasets:[{data:[sd,atd],backgroundColor:["#FF8A1E","#8B7CFF"],borderColor:"transparent",borderRadius:5,hoverOffset:5}]},options:{cutout:"72%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>" "+c.label+": "+c.parsed+" ("+Math.round(c.parsed/(sd+atd||1)*100)+"%)"}}}}});
     $("legRete").innerHTML=[["#FF8A1E","SD",sd],["#8B7CFF","ATD",atd]].map(x=>`<div class="lg"><span class="lgd" style="background:${x[0]}"></span>${x[1]}: <strong style="color:${x[0]};margin-left:3px">${x[2]}</strong></div>`).join("");}
-  function periodoChart(){const byDay=grp(FILTERED,"data");const days=Object.keys(byDay).sort((a,b)=>pd(a)-pd(b)).slice(-30);
-    if(charts.periodo)charts.periodo.destroy();charts.periodo=new Chart($("cPeriodo"),{type:"line",data:{labels:days.map(d=>d.slice(0,5)),datasets:[{data:days.map(d=>byDay[d]),borderColor:"#FF8A1E",backgroundColor:"rgba(255,138,30,.1)",tension:.38,fill:true,pointRadius:days.length>20?0:3,pointBackgroundColor:"#FF8A1E",pointHoverRadius:5,borderWidth:2.5}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:"#646C7A",font:{size:10},maxTicksLimit:10},grid:{color:"rgba(255,255,255,.04)"}},y:{beginAtZero:true,ticks:{color:"#646C7A",font:{size:10},precision:0},grid:{color:"rgba(255,255,255,.04)"}}}}});}
+  function periodoChart(){
+    // N · curva attuale + periodo precedente in sfondo, allineati per giorno-del-periodo
+    const rete=$("fRete").value,tipo=$("fTipo").value,canale=$("fCanale").value;
+    const match=r=>(rete==="all"||r.rete===rete)&&(tipo==="all"||r.tipo===tipo)&&(canale==="all"||r.canale===canale);
+    const [a,b]=hzRange(),[pa,pb]=hzPrevRange();const DAYMS=86400000;
+    const span=Math.max(1,Math.round((b-a)/DAYMS));
+    const cur=new Array(span).fill(0),prev=new Array(span).fill(0);
+    APP.records.forEach(r=>{if(!match(r))return;const d=pd(r.data);if(!d)return;
+      if(d>=a&&d<b){const i=Math.floor((d-a)/DAYMS);if(i>=0&&i<span)cur[i]++;}
+      if(d>=pa&&d<pb){const i=Math.floor((d-pa)/DAYMS);if(i>=0&&i<span)prev[i]++;}});
+    // cumulato se il periodo è lungo (anno/trim) → leggibile; altrimenti giornaliero
+    const cumulate=span>45;
+    if(cumulate){for(let i=1;i<span;i++){cur[i]+=cur[i-1];prev[i]+=prev[i-1];}}
+    const labels=cur.map((_,i)=>{const dd=new Date(a);dd.setDate(a.getDate()+i);return String(dd.getDate()).padStart(2,"0")+"/"+String(dd.getMonth()+1).padStart(2,"0");});
+    const few=span<=20;
+    if(charts.periodo)charts.periodo.destroy();
+    charts.periodo=new Chart($("cPeriodo"),{type:"line",data:{labels,datasets:[
+      {label:"Periodo precedente",data:prev,borderColor:"#8A93A3",backgroundColor:"rgba(138,147,163,.08)",borderDash:[5,4],tension:.35,fill:true,pointRadius:0,borderWidth:1.6,order:2},
+      {label:"Periodo attuale",data:cur,borderColor:"#FF8A1E",backgroundColor:"rgba(255,138,30,.12)",tension:.35,fill:true,pointRadius:few?3:0,pointBackgroundColor:"#FF8A1E",pointHoverRadius:5,borderWidth:2.6,order:1}
+    ]},options:{plugins:{legend:{display:true,labels:{color:"#99A1B0",font:{size:10.5},usePointStyle:true,boxWidth:8,padding:12}},tooltip:{callbacks:{title:it=>(cumulate?"Al ":"")+it[0].label}}},scales:{x:{ticks:{color:"#646C7A",font:{size:10},maxTicksLimit:10},grid:{color:"rgba(255,255,255,.04)"}},y:{beginAtZero:true,ticks:{color:"#646C7A",font:{size:10},precision:0},grid:{color:"rgba(255,255,255,.04)"}}}}});}
   function tipoChart(){const b=grp(FILTERED,"tipo"),labels=Object.keys(b);if(charts.tipo)charts.tipo.destroy();charts.tipo=new Chart($("cTipo"),{type:"doughnut",data:{labels,datasets:[{data:labels.map(k=>b[k]),backgroundColor:labels.map(k=>TIPO_C[k]||"#99A1B0"),borderColor:"#15181F",borderWidth:3,hoverOffset:6}]},options:{cutout:"60%",plugins:{legend:{position:"bottom",labels:{color:"#99A1B0",font:{size:11},padding:12,boxWidth:9,boxHeight:9,usePointStyle:true}}}}});}
   function canaleRank(){const b=grp(FILTERED,"canale"),s=Object.entries(b).sort((a,b)=>b[1]-a[1]),max=s[0]?.[1]||1;
     $("canaleRank").innerHTML=s.length?s.map(([c,n])=>{const col=C_CANALE[c]||"#FF8A1E";return `<div class="pit"><div class="ptop"><span class="pl">${c}</span><span class="pc" style="color:${col}">${n}</span></div><div class="ptrack"><div class="pfill" style="width:${Math.round(n/max*100)}%;background:${col}"></div></div></div>`;}).join(""):'<div class="empty">Nessun dato</div>';}
@@ -816,7 +983,7 @@ const Sales=(function(){
     FILTERED.forEach(r=>{let key,label,sub;
       if(dim==="canale"){key=r.canale||"—";label=key;sub=r.tipo;}
       else if(dim==="rete"){key=r.rete||"—";label=key==="SD"?"Sales Design (SD)":key==="ATD"?"Attitude (ATD)":key;sub=r.canale;}
-      else if(dim==="am"){key=amOf(r.agente)||"Indipendenti / Direct";label=key;sub=r.canale;}
+      else if(dim==="am"){key=r.am||amOf(r.agente)||"Indipendenti / Direct";label=key;sub=r.canale;}
       else{key=normName(r.agente)||"—";label=r.agente||"—";sub=r.canale;}
       if(!by[key])by[key]={label,n:0,fat:0,subc:{},merch:[]};const o=by[key];o.n++;o.fat+=(+r.fatturato||0);o.subc[sub]=(o.subc[sub]||0)+1;o.merch.push({m:r.merchant||"—",d:r.data||""});});
     const rows=Object.entries(by).sort((a,b)=>b[1].n-a[1].n).slice(0,15);const totN=rows.reduce((s,r)=>s+r[1].n,0)||1;
@@ -869,8 +1036,8 @@ const Recruiting=(function(){
   const CITY={"Ragusa":[14.73,36.93],"Agrigento":[13.58,37.31],"Catania":[15.09,37.50],"Roma":[12.50,41.90],"Torino":[7.69,45.07],"Padova":[11.88,45.41],"Novara":[8.62,45.45],"Aosta":[7.32,45.74],"Benevento":[14.78,41.13],"Cuneo":[7.54,44.38],"Napoli":[14.27,40.85],"Bolzano":[11.35,46.50],"Milano":[9.19,45.46],"Firenze":[11.25,43.77],"Bologna":[11.34,44.49],"Genova":[8.93,44.41],"Bari":[16.87,41.12]};
   const REG=["Piemonte","Valle d'Aosta","Lombardia","Trentino-Alto Adige","Veneto","Friuli-Venezia Giulia","Liguria","Emilia-Romagna","Toscana","Umbria","Marche","Lazio","Abruzzo","Molise","Campania","Puglia","Basilicata","Calabria","Sicilia","Sardegna"];
   const AM_MIN=5,AG_MIN=10,AG_TARGET=15,DAY=86400000;
-  let agenti=[],agentiAll=[],vendite=[],potenziale={},mode="pres",selAM=null,pinned=null,hover=null,filterZona="",thr=14,clusterBy="zona",geoLevel="naz",selReg="";
-  let _tmHZ={},_tmAll={},_avg=0;
+  let agenti=[],agentiAll=[],vendite=[],potenziale={},mode="pres",selAM=null,pinned=null,hover=null,filterZona="",thr=14,clusterBy="piramide",geoLevel="naz",selReg="";
+  let _tmHZ={},_tmAll={},_tmQ={},_avg=0;
   let regions=[],proj=null,path=null,centroid={},svg=null,gZoom=null,gReg=null,gLnk=null,gBub=null,built=false;
   const $=s=>document.querySelector(s);
   const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -897,6 +1064,16 @@ const Recruiting=(function(){
   }
   function totMonthBy(){ return salesByPerson(false); }
   function totAllBy(){ return { t: salesByPerson(true) }; }
+  // conteggio contratti reali per persona entro un intervallo [a,b)
+  function salesByRange(a,b){ const byName={},byCanale={};
+    agentiAll.forEach(x=>{ byName[normName(x.nome)]=x.id; if(x.ruolo==="AGENZIA") byCanale[normName(x.nome)]=x.id; });
+    const t={};
+    (APP.records||[]).forEach(r=>{ const d=pdDMY(r.data); if(!d||d<a||d>=b)return;
+      let id=byName[normName(r.agente)]; if(!id&&r.tipo==="Agenzia") id=byCanale[normName(r.canale)];
+      if(id) t[id]=(t[id]||0)+1; });
+    return t; }
+  function qRange(){ const y=HZ.year,q=HZ.q; return [new Date(y,q*3,1), new Date(y,q*3+3,1)]; }
+  const qLabel=()=>"Q"+(HZ.q+1)+" "+HZ.year;
 
   function regionStats(){const tm=totMonthBy(),S={};REG.forEach(r=>{S[r]={r,persone:0,contratti:0};});
     agenti.forEach(a=>{const r=regKey(a.regione);if(!S[r])return;S[r].persone++;S[r].contratti+=(tm[a.id]||0);});
@@ -911,8 +1088,9 @@ const Recruiting=(function(){
     regions.forEach(r=>{centroid[r.name]=proj.invert(path.centroid(r.feature))||[12,42];});
     svg=d3.select("#map");const defs=svg.append("defs");const gl=defs.append("filter").attr("id","rglow").attr("x","-50%").attr("y","-50%").attr("width","200%").attr("height","200%");gl.append("feGaussianBlur").attr("stdDeviation","4").attr("result","b");const gm=gl.append("feMerge");gm.append("feMergeNode").attr("in","b");gm.append("feMergeNode").attr("in","SourceGraphic");
     gZoom=svg.append("g");gReg=gZoom.append("g");gLnk=gZoom.append("g");gBub=gZoom.append("g");
-    gReg.selectAll("path").data(regions).enter().append("path").attr("class","reg").attr("d",r=>path(r.feature)).on("mouseenter",(e,r)=>{hover=r.name;paint();}).on("mouseleave",()=>{hover=null;paint();hideTip();}).on("click",(e,r)=>selectRegion(r.name));
+    gReg.selectAll("path").data(regions).enter().append("path").attr("class","reg").attr("d",r=>path(r.feature)).on("mouseenter",function(e,r){hover=r.name;flashReg(this);paint();}).on("mouseleave",()=>{hover=null;paint();hideTip();}).on("click",(e,r)=>selectRegion(r.name));
     built=true;}
+  function flashReg(el){ if(!el)return; el.classList.remove("flash"); try{el.getBBox();}catch(e){} el.classList.add("flash"); setTimeout(()=>{try{el.classList.remove("flash");}catch(e){}},520); }
   const tipEl=()=>document.getElementById("tip"),wrapEl=()=>document.getElementById("map-wrap");
   function showTip(html,ev){const tip=tipEl();tip.innerHTML=html;tip.classList.add("on");const rect=wrapEl().getBoundingClientRect(),mx=ev.clientX-rect.left,my=ev.clientY-rect.top;tip.style.left=Math.min(Math.max(mx,120),rect.width-120)+"px";tip.style.top=Math.max(my,90)+"px";}
   function hideTip(){tipEl().classList.remove("on");}
@@ -935,13 +1113,34 @@ const Recruiting=(function(){
       d3.select(this).attr("transform","translate("+p[0].toFixed(1)+","+p[1].toFixed(1)+")").style("color",color).attr("class","bub"+(inAmbit?"":" out")+(c.region===focusKey?" hot":""));d3.select(this).select("circle.ring").attr("r",r).attr("stroke",color);d3.select(this).select("circle.core").attr("r",r*0.55).attr("fill",color).attr("fill-opacity",inAmbit?0.9:0.45);});
     const links=[];if(selAM){const amP=proj(place({city:selAM.citta,region:regKey(selAM.regione)}));agenti.filter(a=>a.parent===selAM.nome&&a.id!==selAM.id).forEach(s=>{const p=proj(place({city:s.citta,region:regKey(s.regione)}));if(amP&&p)links.push({a:amP,b:p,r:regKey(s.regione)});});}
     const L=gLnk.selectAll("path.lnk").data(links);L.exit().remove();L.enter().append("path").attr("class","lnk").merge(L).attr("d",d=>{const mx=(d.a[0]+d.b[0])/2,my=(d.a[1]+d.b[1])/2-30;return"M"+d.a[0]+","+d.a[1]+" Q"+mx+","+my+" "+d.b[0]+","+d.b[1];}).classed("hot",d=>d.r===focusKey);
-    buildLegend();buildMlist(RS);renderZone(RS);}
+    buildLegend();buildMlist(RS);renderZone(RS);updateGeoTot();}
+  /* O · totale contratti del periodo sulla mappa, dimensione ∝ volume */
+  function updateGeoTot(){ const el=document.getElementById("geoTot"); if(!el)return;
+    const re=reteOf(); const inPer=(APP.records||[]).filter(r=>inHZ(pdDMY(r.data))&&(re==="all"||r.rete===re));
+    const totC=inPer.length; const merch=new Set(inPer.map(r=>normName(r.merchant)).filter(Boolean)).size;
+    const size=Math.round(26+Math.min(1,totC/120)*22);
+    el.innerHTML='<b style="font-size:'+size+'px">'+totC+'</b><div class="gt-sub">contratti · '+esc(hzLabel())+'<br><b>'+merch+'</b> merchant Rev&nbsp;B attivi</div>'; }
+  /* I · top performer del periodo */
+  function renderTops(){ const el=document.getElementById("topPerf"); if(!el)return; const tm=_tmHZ||{};
+    const sellers=agenti.filter(a=>a.ruolo!=="AGENZIA").map(a=>({a,n:tm[a.id]||0})).sort((x,y)=>y.n-x.n);
+    const amRank=ams().map(am=>{const own=tm[am.id]||0;const team=agenti.filter(a=>a.parent===am.nome&&a.id!==am.id).reduce((s,p)=>s+(tm[p.id]||0),0);return{a:am,n:own+team};}).sort((x,y)=>y.n-x.n);
+    const ags=agenti.filter(a=>a.ruolo==="AGENZIA").map(a=>({a,n:tm[a.id]||0})).sort((x,y)=>y.n-x.n);
+    const c=(cls,medal,label,o)=>o&&o.n>0
+      ? '<div class="topc '+cls+'"><span class="medal">'+medal+'</span><div style="min-width:0"><div class="tc-l">'+label+'</div><div class="tc-n">'+esc(o.a.nome)+'</div></div><span class="tc-v">'+o.n+'</span></div>'
+      : '<div class="topc '+cls+'"><span class="medal">'+medal+'</span><div><div class="tc-l">'+label+'</div><div class="tc-n muted">nessuno nel periodo</div></div></div>';
+    el.innerHTML=c('','🥇','Top Seller',sellers[0])+c('am','👑','Top Area Manager',amRank[0])+c('ag','🏢','Top Agenzia',ags[0]); }
   function showBub(c,ev){const RS=regionStats();const idx=RS.S[c.region]?RS.S[c.region].idx:null;const rows='<div class="r">Persone<strong>'+c.persone+'</strong></div><div class="r">Contratti<strong>'+c.contratti+'</strong></div><div class="r">Indice<strong>'+(idx==null?"n.d.":idx)+'</strong></div>';const names=c.members.slice(0,4).map(a=>esc(a.nome)).join(", ")+(c.members.length>4?" +"+(c.members.length-4):"");showTip('<b>'+esc(c.city||c.region)+'</b><div class="muted" style="margin-bottom:6px">'+esc(c.region)+'</div>'+rows+'<div class="muted" style="margin-top:6px">'+names+'</div>',ev);}
   function buildLegend(){$("#mLegend").innerHTML=mode==="perf"?'<div class="lg"><span class="lgd" style="background:var(--mint)"></span>Sopra media (≥120)</div><div class="lg"><span class="lgd" style="background:var(--sky)"></span>In linea (80–119)</div><div class="lg"><span class="lgd" style="background:var(--brand)"></span>Sotto media (&lt;80)</div><div class="lg"><span class="lgd" style="background:var(--faint)"></span>N.D.</div><div class="lg">Bolla = contratti</div>':'<div class="lg"><span class="lgd" style="background:var(--violet)"></span>Più persone</div><div class="lg">Bolla = persone · colore = avanzamento</div>';$("#mode-note").textContent=mode==="perf"?"Dimensione+colore = performance (contratti) della zona":"Dimensione = presenza · colore = avanzamento recruiting";}
   function buildMlist(RS){const rows=REG.map(r=>RS.S[r]).filter(s=>s.persone>0).sort((a,b)=>b.contratti-a.contratti||b.persone-a.persone);const max=Math.max.apply(null,[1].concat(rows.map(s=>s.contratti)));$("#m-h").textContent=selAM?"Linea di "+selAM.nome:"Tutta la rete";$("#mlist").classList.toggle("focus",!!(hover||pinned));$("#mlist").innerHTML=rows.length?rows.map(s=>{const hot=(hover===s.r)||(!hover&&pinned===s.r);return'<button type="button" class="row'+(hot?" hot":"")+'" data-r="'+esc(s.r)+'"><div class="nm">'+esc(s.r)+'<div class="track"><i style="width:'+Math.round(s.contratti/max*100)+'%"></i></div></div><span class="v">'+s.contratti+'</span></button>';}).join(""):'<div class="empty">Nessun contratto nel periodo.</div>';}
   function renderZone(RS){const rows=REG.map(r=>RS.S[r]).sort((a,b)=>{if(a.idx==null&&b.idx==null)return b.persone-a.persone;if(a.idx==null)return 1;if(b.idx==null)return -1;return b.idx-a.idx;});$("#zone-rows").innerHTML=rows.map(s=>{const hot=(hover===s.r)||(!hover&&pinned===s.r);const idxTxt=s.idx==null?'<span class="muted">n.d.</span>':'<span class="idx '+idxClass(s.idx)+'">'+(s.idx>=120?"▲":s.idx>=80?"=":"▼")+' '+s.idx+'</span>';return'<tr data-r="'+esc(s.r)+'" class="'+(hot?"hot":"")+'"><td>'+esc(s.r)+'</td><td class="num">'+s.persone+'</td><td class="num">'+s.contratti+'</td><td class="num">'+(s.persone?s.cpp.toFixed(1):"–")+'</td><td class="num">'+idxTxt+'</td></tr>';}).join("");
     $("#zone-note").innerHTML="Indice = (contratti/persona della zona) ÷ (media rete <b>"+RS.avg.toFixed(1)+"</b>) × 100 · 100 = in linea con la media · &lt;80 = molte persone poca resa.";
-    const cop=REG.map(r=>({r,n:RS.S[r].persone}));$("#cop-list").innerHTML=cop.filter(x=>x.n<=1).sort((a,b)=>a.n-b.n).map(x=>'<div class="row" style="cursor:default"><div class="nm">'+esc(x.r)+'</div><span class="bdg '+(x.n===0?"bad":"warn")+'">'+(x.n===0?"SCOPERTA":"FRAGILE")+'</span><span class="v">'+x.n+'</span></div>').join("")||'<div class="empty">Nessuna regione scoperta o fragile.</div>';}
+    const cop=REG.map(r=>({r,n:RS.S[r].persone})).filter(x=>x.n<=1).sort((a,b)=>a.n-b.n);
+    $("#cop-list").innerHTML=cop.length?cop.map(x=>{
+      const ppl=agenti.filter(a=>regKey(a.regione)===x.r);
+      const body=(ppl.length?ppl.map(p=>'<div class="xr"><span>'+esc(p.nome)+' · '+esc(p.ruolo)+'</span><b>'+(_tmHZ[p.id]||0)+' contr.</b></div>').join(""):'<div class="xr"><span>Nessuna persona in zona.</span></div>')
+        +'<div class="xr"><span>Mossa consigliata</span><b>'+(x.n===0?"Avviare scouting AM o Agenzia":"Rinforzare con sales / agenzia")+'</b></div>';
+      return '<details class="xrow"><summary><span class="bdg '+(x.n===0?"bad":"warn")+'">'+(x.n===0?"SCOPERTA":"FRAGILE")+'</span><div class="nm">'+esc(x.r)+'</div><span class="v">'+x.n+'</span></summary><div class="xbody">'+body+'</div></details>';
+    }).join(""):'<div class="empty">Nessuna regione scoperta o fragile.</div>';}
 
   function buildChips(){$("#am-chips").innerHTML='<button type="button" class="chip" data-am="" aria-pressed="'+(!selAM)+'">TUTTA LA RETE</button>'+ams().map(a=>'<button type="button" class="chip" data-am="'+esc(a.id)+'" aria-pressed="'+(selAM&&selAM.id===a.id)+'">'+esc(String(a.nome).toUpperCase())+'</button>').join("");}
   function renderLinee(){const tm=totMonthBy();const all=ams().map(am=>{const subs=agenti.filter(a=>a.parent===am.nome&&a.id!==am.id);const att=linea(am).reduce((s,p)=>s+(tm[p.id]||0),0);return{am,subs,att};}).sort((a,b)=>b.att-a.att||b.subs.length-a.subs.length);const totalAtt=all.reduce((s,x)=>s+x.att,0)||1;
@@ -957,7 +1156,14 @@ const Recruiting=(function(){
   function renderRecruiting(){const inCorso=agenti.filter(a=>num(a.stage)<5).length;const ferme=agenti.filter(a=>num(a.stage)<5&&daysSince(a.stageSince)!==null&&daysSince(a.stageSince)>=thr).length;
     $("#rec-stats").innerHTML='<div class="stat ind"><b>'+inCorso+'</b><span>In recruiting</span></div><div class="stat warn"><b>'+ferme+'</b><span>Ferme da '+thr+' gg</span></div>';
     const totP=agenti.length||1;const atK=STAGES.map((s,k)=>agenti.filter(a=>num(a.stage)===k).length);const maxK=Math.max.apply(null,[1].concat(atK));
-    $("#funnel-list").innerHTML=agenti.length?'<div class="funnel">'+STAGES.map((s,k)=>{const n=atK[k];const w=Math.round(n/maxK*100);return `<div class="fstage"><div class="fbar" style="width:${Math.max(w,6)}%"><span class="fn">${n}</span></div><div class="flabel"><b>${k+1} · ${esc(s)}</b> · ${Math.round(n/totP*100)}%</div></div>`;}).join("")+'</div>':'<div class="empty">Nessuna persona in rete.</div>';
+    // D · piramide "acquario": apice = fase finale, base = prima fase; l'acqua riempie ogni fascia ∝ persone
+    const aqua='<div class="aqua-wrap"><div class="aqua">'+
+      [5,4,3,2,1,0].map(k=>{const n=atK[k];const h=Math.max(Math.round(n/maxK*100),n>0?10:0);
+        return '<div class="tier"><div class="wat" style="height:'+h+'%"></div><div class="tl"><span class="n">'+n+'</span>'+esc(STAGES[k])+'</div></div>';}).join("")+
+      '</div><div class="aqua-leg">'+
+      STAGES.map((s,k)=>{const n=atK[k];return '<div class="al"><span class="d" style="background:'+stageColor(k)+'"></span><div style="flex:1"><b>'+n+'</b> · '+esc(s)+'</div><span>'+Math.round(n/totP*100)+'%</span></div>';}).join("")+
+      '</div></div>';
+    $("#funnel-list").innerHTML=agenti.length?aqua:'<div class="empty">Nessuna persona in rete.</div>';
     $("#thr-chips").innerHTML=[14,30,60].map(d=>'<button type="button" class="chip" data-thr="'+d+'" aria-pressed="'+(thr===d)+'">'+d+' GG</button>').join("");
     const fermi=agenti.filter(a=>num(a.stage)<5&&daysSince(a.stageSince)!==null&&daysSince(a.stageSince)>=thr).sort((a,b)=>daysSince(b.stageSince)-daysSince(a.stageSince));
     $("#az-fermi").innerHTML=fermi.length?fermi.map(a=>'<div class="row" style="cursor:default"><div class="nm">'+esc(a.nome)+'<div class="muted" style="font-size:12px">'+esc(STAGES[num(a.stage)])+'</div></div><span class="bdg warn">'+daysSince(a.stageSince)+' GG</span></div>').join(""):'<div class="empty">Nessuna persona ferma oltre '+thr+' giorni.</div>';
@@ -966,18 +1172,37 @@ const Recruiting=(function(){
 
   function badgeRule(d){if(d.ruolo==="AM"){const n=num(d.diretti);return n>=AM_MIN?'<span class="rule ok">Minimo '+AM_MIN+' diretti raggiunto</span>':'<span class="rule warn">Mancano '+(AM_MIN-n)+' diretti (min. '+AM_MIN+')</span>';}if(d.ruolo==="AGENZIA"){const a=num(d.agenti);return a>=AG_MIN?'<span class="rule ok">Soglia '+AG_MIN+' agenti raggiunta</span>':'<span class="rule warn">Mancano '+(AG_MIN-a)+' agenti (min. '+AG_MIN+')</span>';}return'<span class="rule muted">'+(d.parent?'Linea di '+esc(d.parent):'Senza AM')+'</span>';}
   function card(d){const st=num(d.stage);
-    const cHZ=_tmHZ[d.id]||0,cAll=_tmAll[d.id]||0;const mesi=Math.max(1,Math.round((daysSince(d.ingaggio)||30)/30));const avgMese=cAll/mesi;const above=cHZ>=_avg;
-    const perf='<div class="perf"><div class="pm"><b>'+cAll+'</b><span>contratti totali</span></div><div class="pm"><b>'+avgMese.toFixed(1)+'</b><span>media/mese</span></div><div class="pm"><b style="color:'+(above?"var(--mint)":"var(--warn)")+'">'+(above?"▲":"▼")+" "+cHZ+'</b><span>'+esc(hzLabel())+' · media '+_avg.toFixed(1)+'</span></div></div>';
+    const cQ=_tmQ[d.id]||0,cAll=_tmAll[d.id]||0;const mesi=Math.max(1,Math.round((daysSince(d.ingaggio)||90)/30));const avgMese=cAll/mesi;
+    const perf='<div class="perf"><div class="pm"><b style="color:var(--violet)">'+cQ+'</b><span>trim. '+esc(qLabel())+'</span></div><div class="pm"><b>'+cAll+'</b><span>totali da inizio</span></div><div class="pm"><b>'+avgMese.toFixed(1)+'</b><span>media / mese</span></div></div>';
     let extra="";if(d.ruolo==="AM")extra='<div class="k">Diretti</div><div class="val">'+num(d.diretti)+'</div><div class="k">Capacità</div><div class="val">'+(d.capacita==null?"—":num(d.capacita))+'</div>';if(d.ruolo==="AGENZIA")extra='<div class="k">Agenti</div><div class="val">'+num(d.agenti)+'</div>';
     const steps=STAGES.map((s,i)=>{const c=i<st?"done":i===st?"cur":"";return'<div class="step '+c+'" title="'+esc(s)+'">'+esc(s)+'</div>';}).join("");
     const stato = d.attivo===false
       ? '<span style="color:var(--neg)">OFF'+(d.offDal?' dal '+esc(d.offDal):'')+'</span>'
       : '<span style="color:var(--mint)">ON'+(d.onDal?' dal '+esc(d.onDal):'')+'</span>';
-    return'<article class="pcard" style="--pc-rete:'+(d.rete==="ATD"?"#8B7CFF":"#FF8A1E")+'"><div class="pcard-top"><div style="min-width:0"><h4>'+esc(d.nome)+'</h4><span class="meta">'+esc(d.canale||d.citta||"")+(((d.canale||d.citta)&&d.regione)?" · ":"")+esc(regKey(d.regione))+'</span></div><div class="tags">'+roleBadge(d)+ctBadge(d.tipoContratto)+(d.esclusivita?'<span class="bdg '+(/esclus/i.test(d.esclusivita)?"ok":"warn")+'">'+esc(d.esclusivita)+'</span>':'')+'</div></div>'+badgeRule(d)+'<div class="frow">'+extra+'<div class="k">Canale</div><div class="val">'+esc(d.canale||"—")+'</div><div class="k">Tipo ingaggio</div><div class="val">'+esc(d.tipoIngaggio||"—")+'</div><div class="k">AM</div><div class="val">'+esc(d.parent||"—")+'</div><div class="k">Stato</div><div class="val">'+stato+'</div>'+(d.altriMandati?'<div class="k">Altri mandati</div><div class="val" style="color:var(--warn)">'+esc(d.altriMandati)+'</div>':'')+'</div>'+perf+'<div><div class="pipe-l">FASE '+(st+1)+'/6 · '+esc(STAGES[st])+'</div><div class="pipe">'+steps+'</div></div></article>';}
+    return'<article class="pcard" style="--pc-rete:'+(d.rete==="ATD"?"#8B7CFF":"#FF8A1E")+'"><div class="pcard-top"><div style="min-width:0"><h4>'+esc(d.nome)+'</h4><span class="meta"><span class="pid">'+esc(d.id||"")+'</span>'+((d.id&&(d.canale||d.citta||d.regione))?' · ':'')+esc(d.canale||d.citta||"")+(((d.canale||d.citta)&&d.regione)?" · ":"")+esc(regKey(d.regione))+'</span></div><div class="tags"><span class="rete-tag '+(d.rete==="ATD"?"ATD":"SD")+'">'+(d.rete==="ATD"?"ATD":"SD")+'</span>'+roleBadge(d)+ctBadge(d.tipoContratto)+(d.esclusivita?'<span class="bdg '+(/esclus/i.test(d.esclusivita)?"ok":"warn")+'">'+esc(d.esclusivita)+'</span>':'')+'</div></div>'+badgeRule(d)+'<div class="frow">'+extra+'<div class="k">Canale</div><div class="val">'+esc(d.canale||"—")+'</div><div class="k">Tipo ingaggio</div><div class="val">'+esc(d.tipoIngaggio||"—")+'</div><div class="k">AM</div><div class="val">'+esc(d.parent||"—")+'</div><div class="k">Stato</div><div class="val">'+stato+'</div>'+(d.altriMandati?'<div class="k">Altri mandati</div><div class="val" style="color:var(--warn)">'+esc(d.altriMandati)+'</div>':'')+'</div>'+perf+'<div><div class="pipe-l">FASE '+(st+1)+'/6 · '+esc(STAGES[st])+'</div><div class="pipe">'+steps+'</div></div></article>';}
 
   /* ── CLUSTER (per zona / per canale-linea) ── */
   function clusterKey(d){ if(clusterBy==="zona") return regKey(d.regione)||"Senza zona"; return d.canale || (d.parent?("Linea "+d.parent):(d.ruolo==="AM"?("Linea "+d.nome):"Senza canale")); }
+  /* G · piramide schede: AM in cima, Agenzie, Sales in base — evidenzia rete SD/ATD */
+  function renderPyramid(){
+    const tm=_tmHZ||totMonthBy();
+    const list=agenti.filter(d=>!filterZona||regKey(d.regione)===filterZona);
+    $("#r-count").textContent=list.length+" persone · piramide rete";
+    const tiers=[{key:"AM",label:"Area Manager · Team Leader",cls:"am"},{key:"AGENZIA",label:"Agenzie",cls:"ag"},{key:"SALES",label:"Sales",cls:"sa"}];
+    const html=tiers.map(t=>{
+      const ppl=list.filter(d=>d.ruolo===t.key).sort((a,b)=>(tm[b.id]||0)-(tm[a.id]||0)||String(a.nome).localeCompare(String(b.nome)));
+      if(!ppl.length)return "";
+      const sd=ppl.filter(p=>p.rete==="SD").length,atd=ppl.filter(p=>p.rete==="ATD").length;
+      const contr=ppl.reduce((s,p)=>s+(tm[p.id]||0),0);
+      const mix=[sd?'<span class="rete-tag SD">'+sd+' SD</span>':'',atd?'<span class="rete-tag ATD">'+atd+' ATD</span>':''].filter(Boolean).join(" ");
+      return '<div class="pyr-tier '+t.cls+'"><div class="pyr-h"><div style="min-width:0"><div class="pt">'+esc(t.label)+'</div><div class="pn" style="display:flex;gap:6px;margin-top:4px">'+mix+'</div></div>'+
+        '<div class="pv"><div style="text-align:right"><b>'+ppl.length+'</b> <span>persone</span></div><div style="text-align:right"><b style="color:var(--brand)">'+contr+'</b> <span>contratti '+esc(hzLabel())+'</span></div></div></div>'+
+        '<div class="pyr-body"><div class="cards">'+ppl.map(card).join("")+'</div></div></div>';
+    }).filter(Boolean).join("");
+    $("#clusters").innerHTML=html?'<div class="pyr">'+html+'</div>':'<div class="empty">Nessuna persona.</div>';
+  }
   function renderClusters(){
+    if(clusterBy==="piramide"){ renderPyramid(); return; }
     const tm=totMonthBy();
     const list=agenti.filter(d=>!filterZona||regKey(d.regione)===filterZona);
     const groups={};
@@ -1002,12 +1227,20 @@ const Recruiting=(function(){
 
   function renderGap(){
     const items=[];
-    ams().forEach(am=>{const linked=agenti.filter(a=>a.parent===am.nome&&a.id!==am.id).length;const have=Math.max(linked,num(am.diretti));if(have<AM_MIN)items.push({tipo:"AM",nome:am.nome,have,need:AM_MIN,gap:AM_MIN-have,where:am.canale||regKey(am.regione)});});
-    agenti.filter(a=>a.ruolo==="AGENZIA").forEach(ag=>{const have=num(ag.agenti);if(have<AG_MIN)items.push({tipo:"Agenzia",nome:ag.nome,have,need:AG_MIN,gap:AG_MIN-have,where:ag.canale||regKey(ag.regione)});});
+    ams().forEach(am=>{const linked=agenti.filter(a=>a.parent===am.nome&&a.id!==am.id).length;const have=Math.max(linked,num(am.diretti));if(have<AM_MIN)items.push({tipo:"AM",ref:am,nome:am.nome,have,need:AM_MIN,gap:AM_MIN-have,where:am.canale||regKey(am.regione)});});
+    agenti.filter(a=>a.ruolo==="AGENZIA").forEach(ag=>{const have=num(ag.agenti);if(have<AG_MIN)items.push({tipo:"Agenzia",ref:ag,nome:ag.nome,have,need:AG_MIN,gap:AG_MIN-have,where:ag.canale||regKey(ag.regione)});});
     items.sort((a,b)=>b.gap-a.gap);
     const el=$("#gap-list");if(!el)return;
-    el.innerHTML=items.length?items.map(x=>'<div class="row" style="cursor:default"><div class="nm"><strong>'+esc(x.nome)+'</strong> <span class="bdg '+(x.tipo==="AM"?"am":"area")+'">'+x.tipo+'</span><div class="muted" style="font-size:12px;margin-top:3px">'+esc(x.where||"")+' · ha '+x.have+' su '+x.need+'</div></div><span class="bdg bad">+'+x.gap+' da reclutare</span></div>').join(""):'<div class="empty">Tutta la rete è sopra le soglie minime. 🎯</div>';}
-  function renderAll(){ _tmHZ=salesByPerson(false);_tmAll=salesByPerson(true);_avg=regionStats().avg; renderSintesi();paint();renderRecruiting();renderZonaSelect();renderGap();renderClusters();if(geoLevel==="reg")populateGeoReg();}
+    el.innerHTML=items.length?items.map(x=>{
+      const membri=agenti.filter(a=>a.parent===x.nome&&a.id!==x.ref.id);
+      const body='<div class="xr"><span>Attuale</span><b>'+x.have+' su '+x.need+' richiesti</b></div>'+
+        '<div class="xr"><span>Rete</span><b>'+(x.ref.rete==="ATD"?"ATD":"SD")+'</b></div>'+
+        '<div class="xr"><span>Zona / canale</span><b>'+esc(x.where||"—")+'</b></div>'+
+        (membri.length?membri.map(p=>'<div class="xr"><span>'+esc(p.nome)+' · '+esc(p.ruolo)+'</span><b>'+(_tmHZ[p.id]||0)+' contr.</b></div>').join(""):'<div class="xr"><span>Nessun membro collegato finora.</span></div>')+
+        '<div class="xr"><span>Obiettivo</span><b style="color:var(--brand)">+'+x.gap+' da reclutare</b></div>';
+      return '<details class="xrow"><summary><div class="nm"><strong>'+esc(x.nome)+'</strong> <span class="bdg '+(x.tipo==="AM"?"am":"area")+'">'+x.tipo+'</span></div><span class="bdg bad">+'+x.gap+' da reclutare</span></summary><div class="xbody">'+body+'</div></details>';
+    }).join(""):'<div class="empty">Tutta la rete è sopra le soglie minime. 🎯</div>';}
+  function renderAll(){ _tmHZ=salesByPerson(false);_tmAll=salesByPerson(true);const qr=qRange();_tmQ=salesByRange(qr[0],qr[1]);_avg=regionStats().avg; renderSintesi();renderTops();paint();renderRecruiting();renderZonaSelect();renderGap();renderClusters();if(geoLevel==="reg")populateGeoReg();}
   function renderZonaSelect(){const zs=$("#r-zona"),cur=zs.value||filterZona;zs.innerHTML='<option value="">Tutte le zone</option>'+REG.map(z=>'<option value="'+esc(z)+'">'+esc(z)+'</option>').join("");zs.value=cur;filterZona=zs.value;}
 
   document.addEventListener("DOMContentLoaded",()=>{
@@ -1020,12 +1253,12 @@ const Recruiting=(function(){
     $("#zone-rows").addEventListener("mouseleave",()=>{hover=null;paint();});
     $("#thr-chips").addEventListener("click",e=>{const b=e.target.closest("[data-thr]");if(!b)return;thr=Number(b.dataset.thr);renderRecruiting();});
     $("#r-zona").addEventListener("change",function(){filterZona=this.value;renderClusters();});
-    $("#cl-zona").addEventListener("click",()=>setCluster("zona"));$("#cl-canale").addEventListener("click",()=>setCluster("canale"));
+    $("#cl-piramide").addEventListener("click",()=>setCluster("piramide"));$("#cl-zona").addEventListener("click",()=>setCluster("zona"));$("#cl-canale").addEventListener("click",()=>setCluster("canale"));
     $("#geo-naz").addEventListener("click",()=>setGeoLevel("naz"));$("#geo-reg").addEventListener("click",()=>setGeoLevel("reg"));
     $("#geoReg").addEventListener("change",function(){selReg=this.value;if(selReg){pinned=selReg;zoomTo(selReg);}else{pinned=null;zoomReset();}paint();});
   });
   function setMode(m){mode=m;document.getElementById("mode-p").setAttribute("aria-pressed",m==="perf");document.getElementById("mode-q").setAttribute("aria-pressed",m==="pres");paint();}
-  function setCluster(c){clusterBy=c;document.getElementById("cl-zona").setAttribute("aria-pressed",c==="zona");document.getElementById("cl-canale").setAttribute("aria-pressed",c==="canale");renderClusters();}
+  function setCluster(c){clusterBy=c;document.getElementById("cl-piramide").setAttribute("aria-pressed",c==="piramide");document.getElementById("cl-zona").setAttribute("aria-pressed",c==="zona");document.getElementById("cl-canale").setAttribute("aria-pressed",c==="canale");renderClusters();}
   /* H3 · livello geografico Nazionale/Regione + zoom mappa */
   function zoomG(){ return document.querySelector("#map > g"); }
   function zoomReset(){ const g=zoomG(); if(g)g.removeAttribute("transform"); }
@@ -1089,9 +1322,33 @@ function buildControls(){
   syncRows();
 }
 
+/* ═══ ASSISTENTE / SPIEGAZIONI (F) ═══ */
+const HELP_TOPICS=[
+  {id:"start",t:"Da dove parto",h:"Come leggere il cruscotto",b:"<p>Due sezioni in alto: <b>Sales Tracking</b> (i contratti) e <b>Team Recruiting</b> (la rete di persone).</p><p>In alto la <b>fascia filtri</b>: scegli la <b>Rete</b> (SD = Sales Design, arancio · ATD = Attitude, viola/blu) e il <b>periodo</b> (Anno / Trimestre / Mese / Settimana). Tutto il cruscotto si aggiorna su quel periodo.</p><p class='q'>Colore in alto a destra</p><p><b>Live</b> = dati reali dai Google Sheet · <b>Dati demo</b> = endpoint non raggiunto. Il tasto <b>Aggiorna</b> ricarica (l'icona gira mentre carica).</p>"},
+  {id:"sales",t:"Sales",h:"Sezione Sales Tracking",b:"<p>La <b>fascia executive</b> in cima riassume contratti del periodo, split SD/ATD e gli alert.</p><p>I 4 riquadri <b>KPI</b>: contratti del periodo (con variazione % vs periodo precedente), merchant onboardati, dispositivi attivati, province/canali.</p><p class='q'>Andamento nel periodo</p><p>La curva piena è il periodo attuale; quella tratteggiata in sfondo è lo <b>stesso periodo precedente</b>, per capire se stai crescendo o calando.</p>"},
+  {id:"eco",t:"Economics",h:"Proiezione guadagni",b:"<p>Sezione apribile. Applica i modelli di compenso ai contratti reali del periodo:</p><p><b>A · Sales</b>: tariffa a scaglioni (150→240 € a contratto).<br><b>B · Agency</b>: gettone fisso 250 € a contratto, calcolato per canale agenzia.<br><b>C · Override</b>: l'Area Manager prende 25/50 € su ogni contratto del suo team + i suoi contratti personali come Sales.</p><p>Il <b>simulatore</b> fa una stima rapida al variare dei contratti.</p>"},
+  {id:"perf",t:"Performance",h:"Cosa significa «performance»",b:"<p>La performance risponde a una domanda semplice: <b>a parità di persone, quanti contratti porta una zona?</b></p><p class='q'>Indice (Zone)</p><p>È <b>contratti per persona della zona ÷ media della rete × 100</b>.<br>• <b>100</b> = la zona rende come la media.<br>• <b>&gt;120</b> (verde ▲) = rende più della media.<br>• <b>&lt;80</b> (arancio ▼) = tante persone, pochi contratti → serve spinta.</p><p>Sulla <b>mappa</b>, in modalità Performance, la bolla più grande e verde = zona che produce di più.</p>"},
+  {id:"mappa",t:"Mappa",h:"Mappa della rete",b:"<p>In alto a sinistra sulla mappa c'è il <b>totale contratti del periodo</b> (più è grande il numero, più volume) e i <b>merchant Rev B attivi</b>.</p><p>Due modalità: <b>Presenza</b> (dimensione bolla = quante persone) e <b>Performance</b> (dimensione+colore = contratti prodotti).</p><p>Passa il mouse su una regione: fa un <b>flash</b> e la evidenzia. Clicca una regione (o scegli dal menu) per <b>zoomare</b>.</p>"},
+  {id:"top",t:"Top",h:"Top performer",b:"<p>Le tre card in Recruiting mostrano, per il periodo scelto: <b>Top Seller</b> (chi chiude più contratti), <b>Top Area Manager</b> (più contratti su tutta la sua linea), <b>Top Agenzia</b> (il canale agenzia più produttivo).</p>"},
+  {id:"fasi",t:"Fasi recruiting",h:"La piramide delle fasi",b:"<p>La <b>piramide ad acquario</b> mostra quante persone sono in ciascuna fase di ingaggio: dalla base (CALL) all'apice (MAPPA ATTIVA). Più acqua riempie la fascia, più persone sono in quella fase.</p><p>Le <b>fasi ferme</b> elencano chi è bloccato oltre 14/30/60 giorni.</p>"},
+  {id:"schede",t:"Schede",h:"Schede persone",b:"<p>Di default sono in <b>piramide</b>: Area Manager in cima, Agenzie al centro, Sales alla base. Puoi passare a «Per zona» o «Per canale».</p><p>Ogni scheda mostra il codice persona, la rete (SD/ATD), il ruolo, e la performance: <b>contratti del trimestre</b>, totali da inizio, media/mese.</p>"},
+  {id:"dati",t:"Aggiornare i dati",h:"Come aggiorno team e fasi",b:"<p class='q'>Team scouting e fasi di flusso</p><p>I dati delle persone stanno nel <b>Google Sheet Recruiting</b> (pulsante «Modifica dati nel Google Sheet» nella sezione Recruiting). Lì aggiorni la colonna <b>Fase</b> (0→5) e la data: la piramide e le «fasi ferme» si ricalcolano al prossimo <b>Aggiorna</b>.</p><p>I <b>contratti</b> arrivano invece dai <b>moduli di inserimento</b> compilati dai sales: ogni invio finisce nel foglio Sales e viene attribuito alla persona giusta.</p><p class='q'>I mandati agganciati dagli AM</p><p>Un contratto viene attribuito alla persona che lo chiude (campo «agente»). Per l'<b>Area Manager</b>, i contratti del suo team sono quelli delle persone che hanno l'AM come «parent» nel foglio Recruiting: è così che l'override (modello C) incrocia i sales con il loro AM.</p>"}
+];
+function initHelp(){
+  const panel=document.getElementById("helpPanel"),btn=document.getElementById("helpBtn"),x=document.getElementById("helpClose"),
+        tEl=document.getElementById("helpTopics"),bEl=document.getElementById("helpBody");
+  if(!panel)return;
+  tEl.innerHTML=HELP_TOPICS.map((o,i)=>'<button type="button" data-h="'+o.id+'" aria-pressed="'+(i===0)+'">'+o.t+'</button>').join("");
+  function show(id){const o=HELP_TOPICS.find(x=>x.id===id)||HELP_TOPICS[0];bEl.innerHTML='<h5>'+o.h+'</h5>'+o.b;tEl.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.h===o.id));}
+  show("start");
+  tEl.addEventListener("click",e=>{const b=e.target.closest("button[data-h]");if(b)show(b.dataset.h);});
+  btn.addEventListener("click",()=>panel.classList.toggle("on"));
+  x.addEventListener("click",()=>panel.classList.remove("on"));
+}
+
 /* ═══ BOOT ═══ */
 Chart.defaults.color="#99A1B0";Chart.defaults.borderColor="rgba(255,255,255,.05)";Chart.defaults.font.family="'Inter',system-ui,sans-serif";
-function startApp(){ buildControls(); loadAll(); if(CFG.POLL_MS>0) setInterval(loadAll,CFG.POLL_MS); }
+function startApp(){ buildControls(); initHelp(); refreshAll(); if(CFG.POLL_MS>0) setInterval(loadAll,CFG.POLL_MS); }
 (function gate(){
   const pw=CFG.ACCESS_PASSWORD;
   if(!pw){ startApp(); return; }

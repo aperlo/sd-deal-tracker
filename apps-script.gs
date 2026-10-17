@@ -55,8 +55,28 @@ const NOME_TAB = "Master";
 const INTESTAZIONI = [
   "Timestamp","Data","Canale","Tipo","Agente","Ragione Sociale",
   "Partita IVA","Fatturato mese","Dispositivo","N dispositivi",
-  "Pricing","Tariffa Pay","Tariffa Domestic","Provincia","Note","Email agente"
+  "Pricing","Tariffa Pay","Tariffa Domestic","Provincia","Note","Email agente",
+  "Area Manager"   // (P) 17a colonna ADDITIVA — competenza AM, non tocca le colonne 1-16
 ];
+
+/* ============================================================
+   (P) ATTRIBUZIONE AREA MANAGER — ADDITIVO
+   I sales/agenzie SD confluiscono nella RETE DIRETTA SD (sotto il
+   suo AM); i sales delle tre Aree restano di competenza dei tre
+   AM ATD. I nomi devono combaciare con il roster del foglio
+   Recruiting per far salire correttamente l'override (modello C).
+   ============================================================ */
+// Rete diretta SD (Direct Sales + Agenzie + AM): tutti sotto Andrea Perlo, AM Italia.
+const SD_AM_DIRETTA = "Andrea Perlo";
+// Aree ATD: ciascuna sotto il suo Area Manager.
+const AREA_AM = {
+  "Area Nord":   "Massimo Mantovelli",
+  "Area Centro": "Marco Cima",
+  "Area Sud":    "Claudia Massafra"
+};
+function areaManagerDi_(canale) {
+  return canale.tipo === "Area" ? (AREA_AM[canale.canale] || "") : SD_AM_DIRETTA;
+}
 
 /* ============================================================
    ENTRY POINT
@@ -98,7 +118,8 @@ function elabora(d, modalitaTest) {
     String(d.tariffaDomestic),
     String(d.provincia),
     String(d.note || ""),
-    String(d.emailAgente || "")
+    String(d.emailAgente || ""),
+    areaManagerDi_(canale)        // (P) colonna Area Manager
   ]);
 
   // ---- ROUTING MAIL ----
@@ -605,7 +626,8 @@ function leggiSales_() {
       pricing:    String(r[10] || ""),
       tariffaPay: String(r[11] || ""),
       tariffaDom: String(r[12] || ""),
-      provincia:  String(r[13] || "").toUpperCase()
+      provincia:  String(r[13] || "").toUpperCase(),
+      am:         String(r[16] || "")      // (P) Area Manager di competenza
     });
   }
   return out;
