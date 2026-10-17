@@ -613,7 +613,7 @@ details.fold>div{padding:2px 0 16px}
   <div class="g2" style="margin-top:0">
     <div class="card tbl-c"><div class="pad" style="padding-bottom:0;display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div><div class="card-t">Classifica</div><div class="card-s" id="rankSub">Per sales · periodo</div></div>
       <select id="rankBy" style="min-width:150px"><option value="sales">Per sales</option><option value="canale">Per canale</option><option value="am">Per area manager</option><option value="rete">Per rete</option></select></div>
-      <table style="margin-top:12px"><thead><tr><th class="rank">#</th><th id="rankCol1">Agente</th><th id="rankCol2">Canale prevalente</th><th class="num">Fatt.</th><th class="num">Contratti</th></tr></thead><tbody id="agentiTable"><tr><td colspan="5" class="empty">Caricamento…</td></tr></tbody></table></div>
+      <table style="margin-top:12px"><thead><tr><th class="rank">#</th><th id="rankCol1">Agente</th><th id="rankCol2">Canale prevalente</th><th class="num">Contratti</th></tr></thead><tbody id="agentiTable"><tr><td colspan="4" class="empty">Caricamento…</td></tr></tbody></table></div>
     <div class="card tbl-c"><div class="pad" style="padding-bottom:0"><div class="card-t">Contratti per provincia</div><div class="card-s">Ordinati per volume</div></div>
       <table style="margin-top:12px"><thead><tr><th class="rank">#</th><th>Provincia</th><th>Tipo</th><th class="num" style="width:130px">Volume</th><th class="num">N.</th></tr></thead><tbody id="provTable"><tr><td colspan="5" class="empty">Caricamento…</td></tr></tbody></table></div>
   </div>
@@ -995,8 +995,8 @@ const Sales=(function(){
       else if(dim==="am")sub2=Object.keys(o.subc).length+" canali";
       else sub2=Math.round(o.n/totN*100)+"%";
       const ml=o.merch.slice().sort((a,b)=>(pd(b.d)||0)-(pd(a.d)||0)).map(x=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid var(--line)"><span>${x.m}</span><span class="muted" style="font-size:11px">${x.d}</span></div>`).join("");
-      return `<tr class="ag-row" data-k="${i}" style="cursor:pointer"><td class="rank">${i+1}</td><td style="font-weight:600">${o.label} <span class="muted" style="font-size:10px">▸</span></td><td class="muted">${sub2}</td><td class="num" style="color:var(--violet)">${eurK(o.fat)}</td><td class="num" style="font-weight:700;color:var(--brand)">${o.n}</td></tr>`+
-        `<tr class="ag-det" data-k="${i}" style="display:none"><td></td><td colspan="4" style="padding:2px 18px 12px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Merchant (${o.n})</div>${ml}</td></tr>`;}).join(""):'<tr><td colspan="5" class="empty">Nessun dato</td></tr>';}
+      return `<tr class="ag-row" data-k="${i}" style="cursor:pointer"><td class="rank">${i+1}</td><td style="font-weight:600">${o.label} <span class="muted" style="font-size:10px">▸</span></td><td class="muted">${sub2}</td><td class="num" style="font-weight:700;color:var(--brand)">${o.n}</td></tr>`+
+        `<tr class="ag-det" data-k="${i}" style="display:none"><td></td><td colspan="3" style="padding:2px 18px 12px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Merchant (${o.n})</div>${ml}</td></tr>`;}).join(""):'<tr><td colspan="4" class="empty">Nessun dato</td></tr>';}
   function provTable(){const s={};FILTERED.forEach(r=>{const p=validProv(r.provincia);if(!p)return;s[p]=(s[p]||0)+1;});
     const arr=Object.entries(s).sort((a,b)=>b[1]-a[1]);const max=arr[0]?.[1]||1;
     const tByP={};FILTERED.forEach(r=>{const p=validProv(r.provincia);if(!p)return;(tByP[p]=tByP[p]||{})[r.tipo]=(tByP[p][r.tipo]||0)+1;});

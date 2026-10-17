@@ -239,25 +239,27 @@ const T_ON = "2026-10-16";
 // Colonne = HEAD_RECRUITING (18): ID,Nome,Cognome,Ruolo,TipoContratto,TipoIngaggio,
 //   Citta,Regione,AMrif,Fase,DataFase,DataIngaggio,Diretti,Capacita,Agenti,Canale,OnDal,OffDal
 const ROSTER_NOTO = [
-  // --- AREA MANAGER (C) ---
+  // --- AREA MANAGER ATD (C) — Attitude Ltd, uno per area ---
   ["AM-01","Massimo","Mantovelli","AM","C","Mandato","","Piemonte","",5,T_ON,T_ON,7,10,0,"Area Nord",T_ON,""],
   ["AM-02","Marco","Cima","AM","C","Mandato","","Lazio","",5,T_ON,T_ON,2,8,0,"Area Centro",T_ON,""],
-  ["AM-03","","Massafra","AM","C","Mandato","","Campania","",5,T_ON,T_ON,7,10,0,"Area Sud",T_ON,""],
-  // --- AGENCY (B) ---
-  ["AG-01","WeComm","","AGENZIA","B","","","","",5,T_ON,T_ON,0,0,0,"WeComm",T_ON,""],
-  ["AG-02","Fiditech","","AGENZIA","B","","","","",5,T_ON,T_ON,0,0,0,"Fiditech",T_ON,""],
-  ["AG-03","Punto Semplice","","AGENZIA","B","","","","",5,T_ON,T_ON,0,0,0,"Punto Semplice",T_ON,""],
-  ["AG-04","Granda Solutions","","AGENZIA","B","","","","",5,T_ON,T_ON,0,0,0,"Granda Solutions",T_ON,""],
-  ["AG-05","Team Tutino","","AGENZIA","B","","","","",5,T_ON,T_ON,0,0,0,"Team Tutino",T_ON,""],
-  // --- SALES (A) · Area Sud → AM Massafra ---
-  ["SA-01","Fabio","Pirrelli","SALES","A","","","Campania","Massafra",5,T_ON,T_ON,0,"",0,"Area Sud",T_ON,""],
-  ["SA-02","Emanuele","Montagna","SALES","A","","","Campania","Massafra",5,T_ON,T_ON,0,"",0,"Area Sud",T_ON,""],
-  ["SA-03","Francesco","Di Vara","SALES","A","","","Campania","Massafra",5,T_ON,T_ON,0,"",0,"Area Sud",T_ON,""],
-  ["SA-04","Francesco","De Filippi","SALES","A","","","Campania","Massafra",5,T_ON,T_ON,0,"",0,"Area Sud",T_ON,""],
-  ["SA-05","Giovanni","Enzo Rundo","SALES","A","","","Campania","Massafra",5,T_ON,T_ON,0,"",0,"Area Sud",T_ON,""],
-  ["SA-06","Domenico","Derasmo","SALES","A","","","Campania","Massafra",5,T_ON,T_ON,0,"",0,"Area Sud",T_ON,""],
-  ["SA-07","Francesco","Iazzolino","SALES","A","","","Campania","Massafra",5,T_ON,T_ON,0,"",0,"Area Sud",T_ON,""],
-  // --- SALES (A) · Area Nord → AM Mantovelli ---
+  ["AM-03","Claudia","Massafra","AM","C","Mandato","","Campania","",5,T_ON,T_ON,7,10,0,"Area Sud",T_ON,""],
+  // --- AM RETE DIRETTA SD (C) — Andrea Perlo, Italia (Direct Sales + Agenzie sotto di lui) ---
+  ["AM-04","Andrea","Perlo","AM","C","Mandato","","Italia","",5,T_ON,T_ON,10,0,0,"Rete Diretta SD",T_ON,""],
+  // --- AGENCY (B) · Rete Diretta SD → AM Andrea Perlo ---
+  ["AG-01","WeComm","","AGENZIA","B","","","","Andrea Perlo",5,T_ON,T_ON,0,0,0,"WeComm",T_ON,""],
+  ["AG-02","Fiditech","","AGENZIA","B","","","","Andrea Perlo",5,T_ON,T_ON,0,0,0,"Fiditech",T_ON,""],
+  ["AG-03","Punto Semplice","","AGENZIA","B","","","","Andrea Perlo",5,T_ON,T_ON,0,0,0,"Punto Semplice",T_ON,""],
+  ["AG-04","Granda Solutions","","AGENZIA","B","","","","Andrea Perlo",5,T_ON,T_ON,0,0,0,"Granda Solutions",T_ON,""],
+  ["AG-05","Team Tutino","","AGENZIA","B","","","","Andrea Perlo",5,T_ON,T_ON,0,0,0,"Team Tutino",T_ON,""],
+  // --- SALES (A) · Area Sud → AM Claudia Massafra ---
+  ["SA-01","Fabio","Pirrelli","SALES","A","","","Campania","Claudia Massafra",5,T_ON,T_ON,0,"",0,"Area Sud",T_ON,""],
+  ["SA-02","Emanuele","Montagna","SALES","A","","","Campania","Claudia Massafra",5,T_ON,T_ON,0,"",0,"Area Sud",T_ON,""],
+  ["SA-03","Francesco","Di Vara","SALES","A","","","Campania","Claudia Massafra",5,T_ON,T_ON,0,"",0,"Area Sud",T_ON,""],
+  ["SA-04","Francesco","De Filippi","SALES","A","","","Campania","Claudia Massafra",5,T_ON,T_ON,0,"",0,"Area Sud",T_ON,""],
+  ["SA-05","Giovanni","Enzo Rundo","SALES","A","","","Campania","Claudia Massafra",5,T_ON,T_ON,0,"",0,"Area Sud",T_ON,""],
+  ["SA-06","Domenico","Derasmo","SALES","A","","","Campania","Claudia Massafra",5,T_ON,T_ON,0,"",0,"Area Sud",T_ON,""],
+  ["SA-07","Francesco","Iazzolino","SALES","A","","","Campania","Claudia Massafra",5,T_ON,T_ON,0,"",0,"Area Sud",T_ON,""],
+  // --- SALES (A) · Area Nord → AM Massimo Mantovelli ---
   ["SA-08","Rossano","Brozzu","SALES","A","","","Piemonte","Massimo Mantovelli",5,T_ON,T_ON,0,"",0,"Area Nord",T_ON,""],
   ["SA-09","Pacino","Gesualdo Giancarlo","SALES","A","","","Piemonte","Massimo Mantovelli",5,T_ON,T_ON,0,"",0,"Area Nord",T_ON,""],
   ["SA-10","Andrea","Acuti","SALES","A","","","Piemonte","Massimo Mantovelli",5,T_ON,T_ON,0,"",0,"Area Nord",T_ON,""],
@@ -265,16 +267,15 @@ const ROSTER_NOTO = [
   ["SA-12","Daniele","Petrisor Niculae","SALES","A","","","Piemonte","Massimo Mantovelli",5,T_ON,T_ON,0,"",0,"Area Nord",T_ON,""],
   ["SA-13","Duccio","Morelli","SALES","A","","","Piemonte","Massimo Mantovelli",5,T_ON,T_ON,0,"",0,"Area Nord",T_ON,""],
   ["SA-14","Piero","Salciccia","SALES","A","","","Piemonte","Massimo Mantovelli",5,T_ON,T_ON,0,"",0,"Area Nord",T_ON,""],
-  // --- SALES (A) · Area Centro → AM Cima ---
+  // --- SALES (A) · Area Centro → AM Marco Cima ---
   ["SA-15","Edoardo","Cannella","SALES","A","","","Lazio","Marco Cima",5,T_ON,T_ON,0,"",0,"Area Centro",T_ON,""],
   ["SA-16","Anna","Garzone","SALES","A","","","Lazio","Marco Cima",5,T_ON,T_ON,0,"",0,"Area Centro",T_ON,""],
-  // --- SALES (A) · Direct Sales (senza AM) ---
-  ["SA-17","Stefano","Arestia","SALES","A","","","","",5,T_ON,T_ON,0,"",0,"Direct Sales",T_ON,""],
-  ["SA-18","Andrea","Perlo","SALES","A","","","","",5,T_ON,T_ON,0,"",0,"Direct Sales",T_ON,""],
-  ["SA-19","Rossella","Candura","SALES","A","","","","",5,T_ON,T_ON,0,"",0,"Direct Sales",T_ON,""],
-  ["SA-20","Angelo","Ambrosino","SALES","A","","","","",5,T_ON,T_ON,0,"",0,"Direct Sales",T_ON,""],
-  ["SA-21","Cataldo","Vasapolli","SALES","A","","","","",5,T_ON,T_ON,0,"",0,"Direct Sales",T_ON,""],
-  ["SA-22","Alida","Lerda","SALES","A","","","","",5,T_ON,T_ON,0,"",0,"Direct Sales",T_ON,""]
+  // --- SALES (A) · Direct Sales → AM Andrea Perlo (rete diretta SD) ---
+  ["SA-17","Stefano","Arestia","SALES","A","","","","Andrea Perlo",5,T_ON,T_ON,0,"",0,"Direct Sales",T_ON,""],
+  ["SA-18","Rossella","Candura","SALES","A","","","","Andrea Perlo",5,T_ON,T_ON,0,"",0,"Direct Sales",T_ON,""],
+  ["SA-19","Angelo","Ambrosino","SALES","A","","","","Andrea Perlo",5,T_ON,T_ON,0,"",0,"Direct Sales",T_ON,""],
+  ["SA-20","Cataldo","Vasapolli","SALES","A","","","","Andrea Perlo",5,T_ON,T_ON,0,"",0,"Direct Sales",T_ON,""],
+  ["SA-21","Alida","Lerda","SALES","A","","","","Andrea Perlo",5,T_ON,T_ON,0,"",0,"Direct Sales",T_ON,""]
 ];
 
 function testApiRecruiting() { Logger.log(doGet({}).getContent()); }
