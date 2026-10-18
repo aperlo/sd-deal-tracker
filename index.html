@@ -1229,6 +1229,17 @@ const Recruiting=(function(){
   }
   function totMonthBy(){ return salesByPerson(false); }
   function totAllBy(){ return { t: salesByPerson(true) }; }
+  // Zona reale del venditore = regione dove chiude PIÙ contratti (province già normalizzate in sigla).
+  // Un report di chiusura conta dove avviene il deal, non dove è "schedata" la persona.
+  function assignContractRegions(){
+    const byName={},byCanale={},bySort={};
+    agentiAll.forEach(a=>{ byName[normName(a.nome)]=a.id; bySort[sortName(a.nome)]=a.id; if(a.ruolo==="AGENZIA") byCanale[normName(a.nome)]=a.id; });
+    const regCount={};
+    (APP.records||[]).forEach(r=>{ const reg=SIGLA2REG[String(r.provincia||"").toUpperCase()]; if(!reg)return;
+      let id=byName[normName(r.agente)]||bySort[sortName(r.agente)]; if(!id&&r.tipo==="Agenzia") id=byCanale[normName(r.canale)];
+      if(!id)return; (regCount[id]=regCount[id]||{})[reg]=(regCount[id][reg]||0)+1; });
+    agentiAll.forEach(a=>{ const rc=regCount[a.id]; if(rc){ a.regione=Object.entries(rc).sort((x,y)=>y[1]-x[1])[0][0]; } });
+  }
   // conteggio contratti reali per persona entro un intervallo [a,b)
   function salesByRange(a,b){ const byName={},byCanale={},bySort={};
     agentiAll.forEach(x=>{ byName[normName(x.nome)]=x.id; bySort[sortName(x.nome)]=x.id; if(x.ruolo==="AGENZIA") byCanale[normName(x.nome)]=x.id; });
@@ -1453,7 +1464,7 @@ const Recruiting=(function(){
 
   function mapFallback(){ if(!APP.geo.length){ const mw=document.getElementById("map-wrap"); if(mw&&!mw.querySelector(".map-note")){ const d=document.createElement("div"); d.className="map-note"; d.style.cssText="padding:28px;text-align:center;color:var(--faint);font-size:13px;line-height:1.6"; d.innerHTML="Mappa non caricata.<br>Apri il cruscotto da <b>Netlify</b> o da un web server locale — non con doppio clic sul file."; mw.insertBefore(d,document.getElementById("mLegend")); } } }
   function applyReteFilter(){ const re=reteOf(); agenti = re==="all"?agentiAll:agentiAll.filter(a=>a.rete===re); if(selAM&&!agenti.some(a=>a.id===selAM.id))selAM=null; }
-  return { ingest(){agentiAll=APP.agenti||[];vendite=APP.vendite||[];potenziale=APP.potenziale||{};applyReteFilter();if(!built&&APP.geo.length)buildGeo();mapFallback();renderAll();},
+  return { ingest(){agentiAll=APP.agenti||[];vendite=APP.vendite||[];potenziale=APP.potenziale||{};assignContractRegions();applyReteFilter();if(!built&&APP.geo.length)buildGeo();mapFallback();renderAll();},
            onShow(){if(!built&&APP.geo.length){buildGeo();renderAll();}else paint();},
            refresh(){applyReteFilter();renderAll();} };
 })();
