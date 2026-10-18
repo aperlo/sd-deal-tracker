@@ -818,12 +818,63 @@ function normalizeAll(){
     // alias: contratti "Granda…" finiti sotto Direct → ricondotti all'agenzia Granda Solutions
     if(/granda/i.test(r.agente||"")){ r.canale="Granda Solutions"; r.tipo="Agenzia"; r.rete="SD"; }
   });
-  (APP.agenti||[]).forEach(a=>{ a.stageSince=normISO(a.stageSince); a.ingaggio=normISO(a.ingaggio); a.onDal=normISO(a.onDal); a.offDal=normISO(a.offDal); a.rete=/^Area/i.test(a.canale||"")?"ATD":"SD"; });
+  (APP.agenti||[]).forEach(a=>{ a.stageSince=normISO(a.stageSince); a.ingaggio=normISO(a.ingaggio); a.onDal=normISO(a.onDal); a.offDal=normISO(a.offDal); a.rete=/^Area/i.test(a.canale||"")?"ATD":"SD";
+    // regione: normalizza le maiuscole alla forma canonica; se vuota, deriva dalla città
+    let rg=canonRegione(a.regione); if(!rg&&a.citta) rg=regionFromCitta(a.citta); if(rg) a.regione=rg; });
   (APP.vendite||[]).forEach(v=>{ v.data=normMese(v.data); });
 }
 
 /* ═══ DEMO ═══ */
 const REG_NAMES=["Piemonte","Valle d'Aosta","Lombardia","Trentino-Alto Adige","Veneto","Friuli-Venezia Giulia","Liguria","Emilia-Romagna","Toscana","Umbria","Marche","Lazio","Abruzzo","Molise","Campania","Puglia","Basilicata","Calabria","Sicilia","Sardegna"];
+
+/* ═══ GEO: città/provincia → sigla → regione (per localizzare le persone dalla città) ═══ */
+const CITTA_SIGLA={
+  "AGRIGENTO":"AG","ALESSANDRIA":"AL","ANCONA":"AN","AOSTA":"AO","AREZZO":"AR","ASCOLI PICENO":"AP","ASTI":"AT","AVELLINO":"AV",
+  "BARI":"BA","BARLETTA":"BT","BELLUNO":"BL","BENEVENTO":"BN","BERGAMO":"BG","BIELLA":"BI","BOLOGNA":"BO","BOLZANO":"BZ",
+  "BRESCIA":"BS","BRINDISI":"BR","CAGLIARI":"CA","CALTANISSETTA":"CL","CALTANISETTA":"CL","CAMPOBASSO":"CB","CASERTA":"CE","CATANIA":"CT",
+  "CATANZARO":"CZ","CHIETI":"CH","COMO":"CO","COSENZA":"CS","CREMONA":"CR","CROTONE":"KR","CUNEO":"CN","ENNA":"EN",
+  "FERMO":"FM","FERRARA":"FE","FIRENZE":"FI","FOGGIA":"FG","FORLI":"FC","FROSINONE":"FR","GENOVA":"GE","GORIZIA":"GO",
+  "GROSSETO":"GR","IMPERIA":"IM","ISERNIA":"IS","L AQUILA":"AQ","LAQUILA":"AQ","AQUILA":"AQ","LA SPEZIA":"SP","SPEZIA":"SP",
+  "LATINA":"LT","LECCE":"LE","LECCO":"LC","LIVORNO":"LI","LODI":"LO","LUCCA":"LU","MACERATA":"MC","MANTOVA":"MN",
+  "MASSA":"MS","MASSA CARRARA":"MS","MATERA":"MT","MESSINA":"ME","MILANO":"MI","MODENA":"MO","MONZA":"MB","NAPOLI":"NA",
+  "NOVARA":"NO","NUORO":"NU","ORISTANO":"OR","PADOVA":"PD","PALERMO":"PA","PARMA":"PR","PAVIA":"PV","PERUGIA":"PG",
+  "PESARO":"PU","PESCARA":"PE","PIACENZA":"PC","PISA":"PI","PISTOIA":"PT","PORDENONE":"PN","POTENZA":"PZ","PRATO":"PO",
+  "RAGUSA":"RG","RAVENNA":"RA","REGGIO CALABRIA":"RC","REGGIO EMILIA":"RE","RIETI":"RI","RIMINI":"RN","ROMA":"RM",
+  "ROVIGO":"RO","SALERNO":"SA","SASSARI":"SS","SAVONA":"SV","SIENA":"SI","SIRACUSA":"SR","SONDRIO":"SO","TARANTO":"TA",
+  "TERAMO":"TE","TERNI":"TR","TORINO":"TO","TRAPANI":"TP","TRENTO":"TN","TREVISO":"TV","TRIESTE":"TS","UDINE":"UD",
+  "VARESE":"VA","VENEZIA":"VE","VERBANIA":"VB","VERCELLI":"VC","VERONA":"VR","VIBO VALENTIA":"VV","VICENZA":"VI","VITERBO":"VT",
+  "VENTIMIGLIA":"IM","SANREMO":"IM","MONCALIERI":"TO","POZZUOLI":"NA","GALLARATE":"VA","LEGNANO":"MI"
+};
+const SIGLA2REG={
+  TO:"Piemonte",VC:"Piemonte",NO:"Piemonte",CN:"Piemonte",AT:"Piemonte",AL:"Piemonte",BI:"Piemonte",VB:"Piemonte",
+  AO:"Valle d'Aosta",
+  VA:"Lombardia",CO:"Lombardia",SO:"Lombardia",MI:"Lombardia",BG:"Lombardia",BS:"Lombardia",PV:"Lombardia",CR:"Lombardia",MN:"Lombardia",LC:"Lombardia",LO:"Lombardia",MB:"Lombardia",
+  BZ:"Trentino-Alto Adige",TN:"Trentino-Alto Adige",
+  VR:"Veneto",VI:"Veneto",BL:"Veneto",TV:"Veneto",VE:"Veneto",PD:"Veneto",RO:"Veneto",
+  UD:"Friuli-Venezia Giulia",GO:"Friuli-Venezia Giulia",TS:"Friuli-Venezia Giulia",PN:"Friuli-Venezia Giulia",
+  IM:"Liguria",SV:"Liguria",GE:"Liguria",SP:"Liguria",
+  PC:"Emilia-Romagna",PR:"Emilia-Romagna",RE:"Emilia-Romagna",MO:"Emilia-Romagna",BO:"Emilia-Romagna",FE:"Emilia-Romagna",RA:"Emilia-Romagna",FC:"Emilia-Romagna",RN:"Emilia-Romagna",
+  MS:"Toscana",LU:"Toscana",PT:"Toscana",FI:"Toscana",LI:"Toscana",PI:"Toscana",AR:"Toscana",SI:"Toscana",GR:"Toscana",PO:"Toscana",
+  PG:"Umbria",TR:"Umbria",
+  PU:"Marche",AN:"Marche",MC:"Marche",AP:"Marche",FM:"Marche",
+  VT:"Lazio",RI:"Lazio",RM:"Lazio",LT:"Lazio",FR:"Lazio",
+  AQ:"Abruzzo",TE:"Abruzzo",PE:"Abruzzo",CH:"Abruzzo",
+  CB:"Molise",IS:"Molise",
+  CE:"Campania",BN:"Campania",NA:"Campania",AV:"Campania",SA:"Campania",
+  FG:"Puglia",BA:"Puglia",TA:"Puglia",BR:"Puglia",LE:"Puglia",BT:"Puglia",
+  PZ:"Basilicata",MT:"Basilicata",
+  CS:"Calabria",CZ:"Calabria",RC:"Calabria",KR:"Calabria",VV:"Calabria",
+  TP:"Sicilia",PA:"Sicilia",ME:"Sicilia",AG:"Sicilia",CL:"Sicilia",EN:"Sicilia",CT:"Sicilia",RG:"Sicilia",SR:"Sicilia",
+  SS:"Sardegna",NU:"Sardegna",CA:"Sardegna",OR:"Sardegna",SU:"Sardegna"
+};
+const REG_CANON=(function(){const m={};REG_NAMES.forEach(r=>{m[r.toLowerCase()]=r;});
+  m["valle daosta"]="Valle d'Aosta";m["val d aosta"]="Valle d'Aosta";
+  m["trentino alto adige"]="Trentino-Alto Adige";m["friuli venezia giulia"]="Friuli-Venezia Giulia";m["emilia romagna"]="Emilia-Romagna";
+  return m;})();
+function _up(s){return String(s==null?"":s).trim().toUpperCase().replace(/[ÀÁÂ]/g,"A").replace(/[ÈÉÊ]/g,"E").replace(/[ÌÍÎ]/g,"I").replace(/[ÒÓÔ]/g,"O").replace(/[ÙÚÛ]/g,"U").replace(/[’'`]/g," ");}
+function cittaSigla(c){let s=_up(c);if(!s)return"";if(/^[A-Z]{2}$/.test(s)&&SIGLA2REG[s])return s;const k=s.replace(/[^A-Z ]/g," ").replace(/\s+/g," ").trim();return CITTA_SIGLA[k]||CITTA_SIGLA[k.split(" ")[0]]||"";}
+function regionFromCitta(c){const sig=cittaSigla(c);return sig?(SIGLA2REG[sig]||""):"";}
+function canonRegione(s){if(!s)return"";const k=String(s).toLowerCase().replace(/[’']/g," ").replace(/[-]/g," ").replace(/\s+/g," ").trim();return REG_CANON[k]||REG_CANON[k.replace(/\s/g,"-")]||"";}
 function demoRecruiting(){
   const noms=[["Marco","Rossi"],["Luca","Bianchi"],["Sara","Ferrari"],["Giulia","Russo"],["Antonio","Esposito"],["Elena","Romano"],["Paolo","Colombo"],["Chiara","Ricci"],["Davide","Marino"],["Anna","Greco"],["Luigi","Bruno"],["Marta","Gallo"],["Simone","Conti"],["Alice","Costa"],["Fabio","Giordano"],["Laura","Mancini"],["Andrea","Lombardo"],["Valentina","Moretti"],["Stefano","Barbieri"],["Ilaria","Fontana"]];
   const regioni=["Piemonte","Lombardia","Lazio","Campania","Veneto","Emilia-Romagna","Toscana","Sicilia","Puglia","Liguria"];
