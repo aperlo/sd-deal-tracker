@@ -378,7 +378,6 @@ details.fold>div{padding:2px 0 16px}
 :root[data-theme="light"] .nbar,:root[data-theme="light"] .ptrack,:root[data-theme="light"] .mini,
 :root[data-theme="light"] #view-recruiting .track{background:#E2E7EF}
 :root[data-theme="light"] .tip,:root[data-theme="light"] #gate{background:rgba(255,255,255,.98)}
-:root[data-theme="light"] .geo-tot{background:rgba(255,255,255,.72)!important}
 :root[data-theme="light"] .help-panel,:root[data-theme="light"] .hz-panel{box-shadow:0 22px 54px -24px rgba(16,22,40,.4)}
 
 /* ═══ REFRESH · icona dinamica (C) ═══ */
@@ -489,12 +488,10 @@ details.fold>div{padding:2px 0 16px}
 #view-recruiting .rete-tag.SD{background:var(--brand-s);color:var(--brand)} #view-recruiting .rete-tag.ATD{background:var(--violet-s);color:var(--violet)}
 
 /* ═══ TOTALE contratti sulla mappa (O) ═══ */
-#view-recruiting .geo-tot{position:absolute;top:14px;left:14px;z-index:2;pointer-events:none;
-  background:rgba(13,15,20,.55);backdrop-filter:blur(7px);border:1px solid var(--line2);border-radius:14px;padding:11px 15px}
-#view-recruiting .geo-tot b{display:block;font-weight:800;color:var(--brand);line-height:.98;letter-spacing:-.02em;
-  text-shadow:0 0 18px color-mix(in srgb,var(--brand) 40%,transparent)}
-#view-recruiting .geo-tot .gt-sub{font-size:10.5px;color:var(--muted);margin-top:4px}
-#view-recruiting .geo-tot .gt-sub b{display:inline;font-size:12px;color:var(--text)}
+#view-recruiting .geo-tot{display:inline-flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:7px 13px}
+#view-recruiting .geo-tot b{font-weight:800;color:var(--brand);line-height:1;letter-spacing:-.02em;text-shadow:0 0 16px color-mix(in srgb,var(--brand) 30%,transparent)}
+#view-recruiting .geo-tot .gt-sub{font-size:10.5px;color:var(--muted);line-height:1.3}
+#view-recruiting .geo-tot .gt-sub b{font-size:12px;color:var(--text);text-shadow:none}
 
 /* ═══ righe espandibili (Q) ═══ */
 #view-recruiting .xrow{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02);overflow:hidden}
@@ -690,13 +687,14 @@ details.fold>div{padding:2px 0 16px}
 
   <div class="section-h"><div><div class="section-t">Mappa della rete</div></div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <div class="geo-tot" id="geoTot"></div>
       <div class="seg" role="group" aria-label="Livello geografico"><button type="button" id="geo-naz" aria-pressed="true">Nazionale</button><button type="button" id="geo-reg" class="m" aria-pressed="false">Regione</button></div>
       <select id="geoReg" style="display:none;min-width:150px"></select>
       <div class="seg" role="group" aria-label="Colore regioni"><button type="button" id="mode-q" class="m" aria-pressed="true">Presenza</button><button type="button" id="mode-p" aria-pressed="false">Performance</button></div>
       <span class="count" id="mode-note"></span></div></div>
   <div class="tops" id="topPerf"></div>
   <div class="geo">
-    <div class="card map-wrap" id="map-wrap"><div class="geo-tot" id="geoTot"></div><svg id="map" viewBox="0 0 560 600" role="img" aria-label="Mappa Italia"></svg><div class="tip" id="tip"></div><div class="legend" id="mLegend" style="padding:0 8px 8px"></div></div>
+    <div class="card map-wrap" id="map-wrap"><svg id="map" viewBox="0 0 560 600" role="img" aria-label="Mappa Italia"></svg><div class="tip" id="tip"></div><div class="legend" id="mLegend" style="padding:0 8px 8px"></div></div>
     <div class="card pad"><div class="card-t" id="m-h" style="margin-bottom:12px">Tutta la rete</div><div class="list" id="mlist"></div></div>
   </div>
 
@@ -756,7 +754,8 @@ function earnC(own,team){ return earnA(own)+earnOverride(team); }
 const CT_LABEL={A:"Sales",B:"Agency",C:"Override Mng"};
 const eur=n=>"€ "+Math.round(Number(n)||0).toLocaleString("it-IT");
 const eurK=n=>{n=Number(n)||0;return n>=10000?("€ "+Math.round(n/1000)+"k"):eur(n);};
-const normName=s=>String(s||"").toLowerCase().replace(/\s+/g," ").trim();
+const normName=s=>String(s||"").toLowerCase().replace(/[.,;_]/g," ").replace(/\s+/g," ").trim();
+const sortName=s=>normName(s).split(" ").filter(Boolean).sort().join(" "); // chiave ordine-insensibile
 const RESP_RETE="Andrea Perlo";   // responsabile di rete: ha le sue stats ma è escluso dalle classifiche
 const validProv=p=>{const s=String(p||"").trim().toUpperCase();return /^[A-Z]{2}$/.test(s)?s:"";};
 const pdDMY=s=>{const p=String(s||"").split("/");return p.length===3?new Date(+p[2],+p[1]-1,+p[0]):null;};
@@ -1168,11 +1167,11 @@ const Recruiting=(function(){
   const ctBadge=t=>{t=t||"A";return '<span class="ct '+t+'">'+t+' · '+(CT_LABEL[t]||"")+'</span>';};
   // Contratti REALI (dal foglio vendite) attribuiti alle persone della rete, filtrati per orizzonte.
   function salesByPerson(all){
-    const byName={},byCanale={};
-    agentiAll.forEach(a=>{ byName[normName(a.nome)]=a.id; if(a.ruolo==="AGENZIA") byCanale[normName(a.nome)]=a.id; });
+    const byName={},byCanale={},bySort={};
+    agentiAll.forEach(a=>{ byName[normName(a.nome)]=a.id; bySort[sortName(a.nome)]=a.id; if(a.ruolo==="AGENZIA") byCanale[normName(a.nome)]=a.id; });
     const t={};
     (APP.records||[]).forEach(r=>{ const d=pdDMY(r.data); if(!all&&!inHZ(d))return;
-      let id=byName[normName(r.agente)];
+      let id=byName[normName(r.agente)]||bySort[sortName(r.agente)];   // esatto, poi ordine-insensibile
       if(!id&&r.tipo==="Agenzia") id=byCanale[normName(r.canale)];
       if(id) t[id]=(t[id]||0)+1; });
     return t;
@@ -1180,11 +1179,11 @@ const Recruiting=(function(){
   function totMonthBy(){ return salesByPerson(false); }
   function totAllBy(){ return { t: salesByPerson(true) }; }
   // conteggio contratti reali per persona entro un intervallo [a,b)
-  function salesByRange(a,b){ const byName={},byCanale={};
-    agentiAll.forEach(x=>{ byName[normName(x.nome)]=x.id; if(x.ruolo==="AGENZIA") byCanale[normName(x.nome)]=x.id; });
+  function salesByRange(a,b){ const byName={},byCanale={},bySort={};
+    agentiAll.forEach(x=>{ byName[normName(x.nome)]=x.id; bySort[sortName(x.nome)]=x.id; if(x.ruolo==="AGENZIA") byCanale[normName(x.nome)]=x.id; });
     const t={};
     (APP.records||[]).forEach(r=>{ const d=pdDMY(r.data); if(!d||d<a||d>=b)return;
-      let id=byName[normName(r.agente)]; if(!id&&r.tipo==="Agenzia") id=byCanale[normName(r.canale)];
+      let id=byName[normName(r.agente)]||bySort[sortName(r.agente)]; if(!id&&r.tipo==="Agenzia") id=byCanale[normName(r.canale)];
       if(id) t[id]=(t[id]||0)+1; });
     return t; }
   function qRange(){ const y=HZ.year,q=HZ.q; return [new Date(y,q*3,1), new Date(y,q*3+3,1)]; }
@@ -1235,8 +1234,8 @@ const Recruiting=(function(){
   function updateGeoTot(){ const el=document.getElementById("geoTot"); if(!el)return;
     const re=reteOf(); const inPer=(APP.records||[]).filter(r=>inHZ(pdDMY(r.data))&&(re==="all"||r.rete===re));
     const totC=inPer.length; const merch=new Set(inPer.map(r=>normName(r.merchant)).filter(Boolean)).size;
-    const size=Math.round(26+Math.min(1,totC/120)*22);
-    el.innerHTML='<b style="font-size:'+size+'px">'+totC+'</b><div class="gt-sub">contratti · '+esc(hzLabel())+'<br><b>'+merch+'</b> merchant Rev&nbsp;B attivi</div>'; }
+    const size=Math.round(20+Math.min(1,totC/120)*12);   // 20–32px in base al volume (ranking nazionale)
+    el.innerHTML='<b style="font-size:'+size+'px">'+totC+'</b><div class="gt-sub">contratti · '+esc(hzLabel())+'<br><b>'+merch+'</b> merchant Rev&nbsp;B</div>'; }
   /* I · top performer del periodo */
   function renderTops(){ const el=document.getElementById("topPerf"); if(!el)return; const tm=_tmHZ||{};
     const notResp=a=>normName(a.nome)!==normName(RESP_RETE);   // il resp. di rete non entra in classifica
