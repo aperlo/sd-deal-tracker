@@ -28,7 +28,7 @@ const SUPERVISORI  = [MAIL_DESK, MAIL_DIRCOMM];          // digest: desk + direz
 // true  = TUTTE le email (conferme + digest) vanno SOLO a MAIL_TEST_DEST.
 //         Niente invii a canali/agenzie/aree/supervisori reali. (fase di test)
 // false = invii reali ai destinatari. (PRODUZIONE)
-const MODO_TEST      = true;
+const MODO_TEST      = false;
 const MAIL_TEST_DEST = "dealtracker.hub@gmail.com";     // dove arrivano le email in test
 
 const COLORI = {
