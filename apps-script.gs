@@ -738,6 +738,69 @@ function testApiVendite() {
   Logger.log(doGet({}).getContent());
 }
 
+/* ============================================================
+   RIALLINEA MASTER — pulizia una tantum (eseguire dall'editor)
+   Fa un BACKUP, poi ricostruisce il tab Master con le colonne
+   canoniche in ordine: una sola colonna per campo, province
+   normalizzate in sigla, Rete dedotta dove manca, doppioni
+   eliminati. I dati vengono presi da dove si trovano (per nome
+   intestazione, con alias). NON perde righe.
+   ============================================================ */
+const CANON_MASTER = ["Timestamp","Data","Rete","Canale","Tipo","Agente","Ragione Sociale","Partita IVA","Fatturato mese","Dispositivo","N dispositivi","Pricing","Tariffa Pay","Tariffa Domestic","Provincia","Note","Email agente","Area Manager"];
+const ALIAS_MASTER = {
+  "Timestamp":["timestamp"],"Data":["data"],"Rete":["rete"],"Canale":["canale"],"Tipo":["tipo"],
+  "Agente":["agente","nome agente","nome agenta"],
+  "Ragione Sociale":["ragione sociale","merchant","ragione soc."],
+  "Partita IVA":["partita iva","p.iva","piva"],
+  "Fatturato mese":["fatturato mese","fatturato"],
+  "Dispositivo":["dispositivo","tipo dispositivo"],
+  "N dispositivi":["n dispositivi","n° dispositivi","numero dispositivi","nr dispositivi"],
+  "Pricing":["pricing"],"Tariffa Pay":["tariffa pay","tariffa revpay","revpay"],
+  "Tariffa Domestic":["tariffa domestic","domestic"],
+  "Provincia":["provincia","prov"],"Note":["note"],
+  "Email agente":["email agente","email","mail"],"Area Manager":["area manager"]
+};
+function riallineaMaster() {
+  const ss  = SpreadsheetApp.openById(SHEET_ID);
+  const tab = ss.getSheetByName(NOME_TAB);
+  if (!tab || tab.getLastRow() < 1) { Logger.log("Master vuoto: niente da fare."); return; }
+  const dati = tab.getDataRange().getValues();
+  const head = dati[0].map(function(h){ return String(h||"").trim().toLowerCase(); });
+
+  // BACKUP
+  const bk = "Master_backup_" + Utilities.formatDate(new Date(),"Europe/Rome","yyyyMMdd_HHmm");
+  tab.copyTo(ss).setName(bk);
+
+  function findCol(field){ const al=ALIAS_MASTER[field]||[field.toLowerCase()]; for(var a=0;a<al.length;a++){ var k=head.indexOf(al[a]); if(k>=0) return k; } return -1; }
+  const colMap = {}; CANON_MASTER.forEach(function(f){ colMap[f]=findCol(f); });
+
+  const out = [CANON_MASTER.slice()];
+  for (let i=1;i<dati.length;i++){
+    const r = dati[i];
+    const tsC=colMap["Timestamp"], dC=colMap["Data"];
+    if ((tsC<0||!r[tsC]) && (dC<0||!r[dC])) continue;   // riga vuota
+    const tipo = colMap["Tipo"]>=0 ? String(r[colMap["Tipo"]]||"").trim() : "";
+    let rete = colMap["Rete"]>=0 ? String(r[colMap["Rete"]]||"").trim().toUpperCase() : "";
+    if (rete!=="SD" && rete!=="ATD") rete = (tipo==="Area" ? "ATD" : "SD");
+    let prov="";
+    for (let c=0;c<head.length;c++){ if(head[c].indexOf("provincia")>=0||head[c]==="prov"){ const n=normalizeProvincia_(r[c]); if(n){prov=n;break;} } }
+    out.push(CANON_MASTER.map(function(f){
+      if (f==="Rete") return rete;
+      if (f==="Provincia") return prov;
+      const c=colMap[f]; let v = c>=0 ? r[c] : "";
+      if (f==="Partita IVA") v = "'" + String(v==null?"":v).replace(/^'/,"");
+      return v;
+    }));
+  }
+
+  tab.clearContents();
+  tab.getRange(1,1,out.length,CANON_MASTER.length).setValues(out);
+  tab.setFrozenRows(1);
+  const extra = tab.getMaxColumns() - CANON_MASTER.length;
+  if (extra > 0) tab.deleteColumns(CANON_MASTER.length+1, extra);
+  Logger.log("Master riallineato: " + (out.length-1) + " righe · colonne canoniche · backup: " + bk);
+}
+
 
 /* ████████████████████████████████████████████████████████████
    ██  MAIL MENSILE AI SALES — ADDITIVA                        ██
