@@ -774,6 +774,13 @@ function riallineaMaster() {
   function findCol(field){ const al=ALIAS_MASTER[field]||[field.toLowerCase()]; for(var a=0;a<al.length;a++){ var k=head.indexOf(al[a]); if(k>=0) return k; } return -1; }
   const colMap = {}; CANON_MASTER.forEach(function(f){ colMap[f]=findCol(f); });
 
+  // tariffa -> stringa "0,80%" (gestisce numeri 0.008 e stringhe "0,80%")
+  function toPct(v){ if(v===""||v==null) return ""; if(typeof v==="number") return (v*100).toFixed(2).replace(".",",")+"%";
+    var s=String(v).trim(); if(s.indexOf("%")>=0) return s; var n=parseFloat(s.replace(",",".")); if(!isNaN(n)&&n<1) return (n*100).toFixed(2).replace(".",",")+"%"; return s; }
+  const pivaTxt = function(v){ return String(v==null?"":v).replace(/[^0-9]/g,""); };
+  const numOr = function(v){ var n=Number(v); return isNaN(n)?"":n; };
+  const g = function(r,f){ var c=colMap[f]; return c>=0 ? r[c] : ""; };
+
   const out = [CANON_MASTER.slice()];
   for (let i=1;i<dati.length;i++){
     const r = dati[i];
@@ -784,21 +791,29 @@ function riallineaMaster() {
     if (rete!=="SD" && rete!=="ATD") rete = (tipo==="Area" ? "ATD" : "SD");
     let prov="";
     for (let c=0;c<head.length;c++){ if(head[c].indexOf("provincia")>=0||head[c]==="prov"){ const n=normalizeProvincia_(r[c]); if(n){prov=n;break;} } }
-    out.push(CANON_MASTER.map(function(f){
-      if (f==="Rete") return rete;
-      if (f==="Provincia") return prov;
-      const c=colMap[f]; let v = c>=0 ? r[c] : "";
-      if (f==="Partita IVA") v = "'" + String(v==null?"":v).replace(/^'/,"");
-      return v;
-    }));
+    out.push([
+      g(r,"Timestamp"), g(r,"Data"), rete, g(r,"Canale"), tipo, g(r,"Agente"), g(r,"Ragione Sociale"),
+      pivaTxt(g(r,"Partita IVA")), numOr(g(r,"Fatturato mese")), g(r,"Dispositivo"), numOr(g(r,"N dispositivi")),
+      numOr(g(r,"Pricing")), toPct(g(r,"Tariffa Pay")), toPct(g(r,"Tariffa Domestic")), prov, g(r,"Note"),
+      g(r,"Email agente"), g(r,"Area Manager")
+    ]);
   }
 
-  tab.clearContents();
-  tab.getRange(1,1,out.length,CANON_MASTER.length).setValues(out);
+  tab.clear();   // pulisce valori E formati vecchi
+  const n = out.length;
+  tab.getRange(1,1, n,1).setNumberFormat("dd/MM/yyyy HH:mm:ss"); // Timestamp
+  tab.getRange(1,2, n,1).setNumberFormat("dd/MM/yyyy");          // Data
+  tab.getRange(1,8, n,1).setNumberFormat("@");                   // Partita IVA (testo, zeri iniziali)
+  tab.getRange(1,9, n,1).setNumberFormat("0");                   // Fatturato
+  tab.getRange(1,11,n,1).setNumberFormat("0");                   // N dispositivi
+  tab.getRange(1,12,n,1).setNumberFormat("0");                   // Pricing (euro, NO %)
+  tab.getRange(1,13,n,1).setNumberFormat("@");                   // Tariffa Pay (testo "0,50%")
+  tab.getRange(1,14,n,1).setNumberFormat("@");                   // Tariffa Domestic (testo "0,80%")
+  tab.getRange(1,1, n, CANON_MASTER.length).setValues(out);
   tab.setFrozenRows(1);
   const extra = tab.getMaxColumns() - CANON_MASTER.length;
   if (extra > 0) tab.deleteColumns(CANON_MASTER.length+1, extra);
-  Logger.log("Master riallineato: " + (out.length-1) + " righe · colonne canoniche · backup: " + bk);
+  Logger.log("Master riallineato e formattato: " + (n-1) + " righe · backup: " + bk);
 }
 
 
