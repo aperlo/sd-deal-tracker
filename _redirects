@@ -1,3 +1,16 @@
-# Scorciatoie opzionali (il cruscotto è a tab unica, non obbligatorie).
+# Scorciatoie cruscotto (tab unica)
 /sales       /index.html   200
 /recruiting  /index.html   200
+
+# Moduli inserimento contratti — percorsi puliti (rewrite, l'URL resta pulito)
+/moduli        /forms/index.html            200
+/form          /forms/index.html            200
+/direct        /forms/direct.html           200
+/nord          /forms/nord.html             200
+/centro        /forms/centro.html           200
+/sud           /forms/sud.html              200
+/wecomm        /forms/wecomm.html           200
+/fiditech      /forms/fiditech.html         200
+/puntosemplice /forms/puntosemplice.html    200
+/granda        /forms/grandasolutions.html  200
+/teamtutino    /forms/teamtutino.html       200
