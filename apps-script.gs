@@ -242,7 +242,7 @@ function inviaConferma(d, canale, dataIt, destinatari, ccList, bccList, colore, 
   const oggetto = tag + "NEW merchant by " + reteOgg + "/" + canale.canale + "/" + canale.tipo + " - " + d.ragioneSociale + " / " + dataIt;
   const euro    = "€ " + Number(d.fatturatoMese).toLocaleString("it-IT");
   const disp    = d.tipoDispositivo + " × " + d.numeroDispositivi;
-  const saluto  = canale.saluto === "team" ? "Complimenti Team " + canale.canale : "Complimenti " + d.agente;
+  const saluto  = canale.saluto === "team" ? "Complimenti Team " + String(canale.canale).replace(/^Team\s+/i, "") : "Complimenti " + d.agente;
   const listaDeal = elencoDeal(canale, d.emailAgente, d.ragioneSociale, dataIt);
   const rigaCopia = [dataIt, d.ragioneSociale, d.partitaIva, euro, disp,
     d.pricing, "RevPay " + d.tariffaPay, "Dom " + d.tariffaDomestic, "Prov. " + d.provincia].join(" · ");
