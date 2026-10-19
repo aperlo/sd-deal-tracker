@@ -153,24 +153,21 @@ function elabora(d, modalitaTest) {
   if (modalitaTest) {
     inviaConferma(d, canale, dataIt, [MAIL_TEST], [], [], COLORI.test, "[TEST] ", true);
 
-  } else if (canale.gruppo === "master") {
-    if (emailComp) {
-      inviaConferma(d, canale, dataIt, [emailComp],  [], bccDesk, COLORI.compilatore, "", false);
-    } else {
-      inviaConferma(d, canale, dataIt, [MAIL_DESK],  [], [],      COLORI.salesdesk,   "", false);
-    }
+  // NB: il desk è anche il mittente → Gmail NON consegna il BCC a sé stesso.
+  //     Quindi il desk riceve una COPIA DEDICATA nel campo "A" (arriva in inbox).
+  } else if (canale.gruppo === "master") {                    // DIRECT
+    if (emailComp) inviaConferma(d, canale, dataIt, [emailComp], [], [], COLORI.compilatore, "", false);
+    inviaConferma(d, canale, dataIt, [MAIL_DESK], [], [], COLORI.salesdesk, "", false);   // copia desk
 
-  } else if (canale.gruppo === "agenzia") {
-    if (emailComp) {
-      inviaConferma(d, canale, dataIt, [emailComp],    [], bccDesk, COLORI.compilatore, "", false);
-    }
-    inviaConferma(d, canale, dataIt, [canale.mail], [], bccDesk, COLORI.agent,       "", false);
+  } else if (canale.gruppo === "agenzia") {                   // AGENZIE
+    if (emailComp) inviaConferma(d, canale, dataIt, [emailComp], [], [], COLORI.compilatore, "", false);
+    inviaConferma(d, canale, dataIt, [canale.mail], [], [], COLORI.agent, "", false);
+    inviaConferma(d, canale, dataIt, [MAIL_DESK], [], [], COLORI.salesdesk, "", false);   // copia desk
 
-  } else {
-    if (emailComp) {
-      inviaConferma(d, canale, dataIt, [emailComp],    [], bccDesk, COLORI.compilatore, "", false);
-    }
-    inviaConferma(d, canale, dataIt, [canale.mail], [], bccDesk, COLORI.agent,       "", false);
+  } else {                                                    // AREE
+    if (emailComp) inviaConferma(d, canale, dataIt, [emailComp], [], [], COLORI.compilatore, "", false);
+    inviaConferma(d, canale, dataIt, [canale.mail], [], [], COLORI.agent, "", false);
+    inviaConferma(d, canale, dataIt, [MAIL_DESK], [], [], COLORI.salesdesk, "", false);   // copia desk
   }
 
   return rispondi({ ok: true });
