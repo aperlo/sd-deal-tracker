@@ -282,29 +282,34 @@ function inviaDigestSupervisione() {
   const adesso = new Date();
   const ora    = adesso.getHours();
 
-  // 3 recap/giorno: 12 = mattina (08→12) · 18 = pomeriggio (12→18) · 08 = giornata (18 ieri→08)
-  let oreFinestra, titoloRecap;
-  if      (ora >= 18) { oreFinestra = 6;  titoloRecap = "Recap pomeriggio"; }
-  else if (ora >= 12) { oreFinestra = 4;  titoloRecap = "Recap mattina"; }
-  else                { oreFinestra = 14; titoloRecap = "Recap giornata"; }
+  // 3 recap/giorno: 13 (mattina 08→13) · 20 (pomeriggio 13→20) · 08 (giornata = giorno prima, 20→08)
+  let oreFinestra, titoloRecap, giornoRif;
+  if      (ora >= 20) { oreFinestra = 7;  titoloRecap = "Recap pomeriggio"; giornoRif = adesso; }
+  else if (ora >= 13) { oreFinestra = 5;  titoloRecap = "Recap mattina";    giornoRif = adesso; }
+  else                { oreFinestra = 12; titoloRecap = "Recap giornata";   giornoRif = new Date(adesso.getTime() - 24*60*60*1000); }
   const dal = new Date(adesso.getTime() - oreFinestra * 60 * 60 * 1000);
+  const dataRif = Utilities.formatDate(giornoRif, "Europe/Rome", "dd/MM/yyyy");
 
+  // lettura header-driven (regge il riordino colonne del Master)
   const dati = apriTab().getDataRange().getValues();
+  const head = (dati[0]||[]).map(function(h){ return String(h||"").trim().toLowerCase(); });
+  function colD(names,fb){ for(var i=0;i<names.length;i++){ var k=head.indexOf(names[i]); if(k>=0) return k; } return fb; }
+  const cTs=colD(["timestamp"],0), cCan=colD(["canale"],2), cAg=colD(["agente","nome agente"],4), cMerc=colD(["ragione sociale","merchant"],5), cDisp=colD(["dispositivo","tipo dispositivo"],8), cNd=colD(["n dispositivi","numero dispositivi"],9);
+  let cProv=13; for(var hp=0;hp<head.length;hp++){ if(head[hp].indexOf("provincia")>=0){cProv=hp;break;} }
   const deal = [];
-
   for (let i = 1; i < dati.length; i++) {
-    const tsRaw = dati[i][0];
+    const tsRaw = dati[i][cTs];
     if (!tsRaw || String(tsRaw).trim() === "") continue;
     const dataRiga = parseTimestamp(tsRaw);
     if (!dataRiga) continue;
     if (dataRiga < dal || dataRiga > adesso) continue;
     deal.push({
       ts:       Utilities.formatDate(dataRiga, "Europe/Rome", "HH:mm"),
-      canale:   String(dati[i][2]),
-      agente:   String(dati[i][4]),
-      merchant: String(dati[i][5]),
-      provincia:String(dati[i][13]),
-      disp:     String(dati[i][8]) + " × " + String(dati[i][9])
+      canale:   String(dati[i][cCan]),
+      agente:   String(dati[i][cAg]),
+      merchant: String(dati[i][cMerc]),
+      provincia:String(dati[i][cProv]),
+      disp:     String(dati[i][cDisp]) + " × " + String(dati[i][cNd])
     });
   }
 
@@ -318,8 +323,8 @@ function inviaDigestSupervisione() {
 
   const oraFmt  = Utilities.formatDate(adesso, "Europe/Rome", "HH:mm");
   const dataFmt = Utilities.formatDate(adesso, "Europe/Rome", "dd/MM/yyyy");
-  const oggetto = titoloRecap + " — " + deal.length + " contratt" + (deal.length === 1 ? "o" : "i") +
-    " · " + dataFmt + " ore " + oraFmt;
+  const oggetto = titoloRecap + " " + dataRif + " — " + deal.length + " contratt" + (deal.length === 1 ? "o" : "i") +
+    " · agg. ore " + oraFmt;
 
   const righeHtml = deal.map(function(r, idx) {
     const bg = idx % 2 === 0 ? "#151F1D" : "#0F1716";
@@ -349,8 +354,9 @@ function inviaDigestSupervisione() {
         '<td align="right" style="color:#B8BFBB;font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;">Supervisione rete</td>' +
       '</tr></table></td></tr>' +
     '<tr><td bgcolor="#0F1716" style="background-color:#0F1716;padding:22px 28px 16px;">' +
-      '<div style="color:#FFFFFF;font-size:20px;font-weight:700;">Riepilogo contratti</div>' +
-      '<div style="color:#C8CFCB;font-size:13px;margin-top:4px;">' + dataFmt + ' &nbsp;&middot;&nbsp; aggiornamento ore ' + oraFmt + '</div>' +
+      '<div style="color:#FFFFFF;font-size:20px;font-weight:700;">' + titoloRecap + '</div>' +
+      '<div style="color:#C8CFCB;font-size:13px;margin-top:4px;">Giorno di riferimento: <strong style="color:#FFFFFF;">' + dataRif + '</strong> &nbsp;&middot;&nbsp; aggiornamento ore ' + oraFmt + '</div>' +
+      '<div style="margin-top:14px;"><a href="https://dealtrackerhub.netlify.app/" style="display:inline-block;background-color:#FF941A;color:#0F1716;font-weight:700;font-size:13px;text-decoration:none;padding:10px 20px;border-radius:8px;">Apri il Cruscotto Sales &rarr;</a></div>' +
     '</td></tr>' +
     '<tr><td bgcolor="#0F1716" style="background-color:#0F1716;padding:0 28px 20px;">' +
       '<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#151F1D" style="background-color:#151F1D;border:1px solid #2E3A38;border-radius:12px;"><tr><td style="padding:16px 20px;">' +
@@ -413,10 +419,10 @@ function impostaTriggerDigest() {
   ScriptApp.getProjectTriggers().forEach(function(t) {
     if (t.getHandlerFunction() === "inviaDigestSupervisione") ScriptApp.deleteTrigger(t);
   });
-  [8, 12, 18].forEach(function(ora) {
+  [8, 13, 20].forEach(function(ora) {
     ScriptApp.newTrigger("inviaDigestSupervisione").timeBased().everyDays(1).atHour(ora).create();
   });
-  Logger.log("Trigger impostati: 08:00 (recap giornata), 12:00 (mattina), 18:00 (pomeriggio) — a desk + dir. comm.");
+  Logger.log("Trigger impostati: 13:00 (mattina), 20:00 (pomeriggio), 08:00 (giornata, giorno prima) — a desk + dir. comm.");
 }
 
 /* ============================================================
