@@ -164,6 +164,18 @@ function apriTab() {
 }
 
 /* ============================================================
+   BOTTONE "SEGNALA PROBLEMA" (in fondo a tutte le mail)
+   Apre una mail a Direzione Commerciale, Desk in copia.
+   ============================================================ */
+function btnSegnala_(oggetto) {
+  var subj = encodeURIComponent('Segnalazione problema' + (oggetto ? (' - ' + oggetto) : ''));
+  var href = 'mailto:' + MAIL_DIRCOMM + '?cc=' + MAIL_DESK + '&subject=' + subj;
+  return '<div style="text-align:center;margin:0 0 14px;">' +
+    '<a href="' + href + '" style="display:inline-block;background-color:#FF941A;color:#0F1716;font-weight:700;font-size:13px;text-decoration:none;padding:11px 24px;border-radius:8px;">Segnala un problema</a>' +
+  '</div>';
+}
+
+/* ============================================================
    MAIL CONFERMA
    ============================================================ */
 function inviaConferma(d, canale, dataIt, destinatari, ccList, bccList, colore, tag, isTest) {
@@ -218,7 +230,7 @@ function inviaConferma(d, canale, dataIt, destinatari, ccList, bccList, colore, 
     '<tr><td bgcolor="#0A0F0E" style="background-color:#0A0F0E;border-top:1px solid #2E3A38;padding:18px 28px 22px;">' +
       '<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#1E1810" style="background-color:#1E1810;border:1px solid #4A3A1A;border-radius:8px;margin-bottom:16px;"><tr><td style="padding:12px 14px;">' +
         '<div style="color:#FF941A;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;">Assistenza</div>' +
-        '<div style="color:#C8CFCB;font-size:12px;line-height:1.6;">Per problematiche scrivete a <a href="mailto:direzionecommerciale@sales-design.it" style="color:#FF941A;text-decoration:none;">direzionecommerciale@sales-design.it</a></div></td></tr></table>' +
+        '<div style="color:#C8CFCB;font-size:12px;line-height:1.6;margin-bottom:12px;">Problemi con questo deal? Segnala alla Direzione Commerciale (Desk in copia).</div>' + btnSegnala_(d.ragioneSociale) + '</td></tr></table>' +
       '<div style="color:#8A918D;font-size:11px;line-height:1.7;text-align:center;"><strong style="color:#C8CFCB;">Sales Design S.r.l.</strong><br>Galleria Passarella 1, 20122 &mdash; Milano</div></td></tr>' +
   '</table></td></tr></table>';
 
@@ -340,7 +352,7 @@ function inviaDigestSupervisione() {
         righeHtml +
       '</table>' +
     '</td></tr>' +
-    '<tr><td bgcolor="#0A0F0E" style="background-color:#0A0F0E;border-top:1px solid #2E3A38;padding:16px 28px;text-align:center;">' +
+    '<tr><td bgcolor="#0A0F0E" style="background-color:#0A0F0E;border-top:1px solid #2E3A38;padding:16px 28px;text-align:center;">' + btnSegnala_('Riepilogo rete') +
       '<div style="color:#8A918D;font-size:11px;line-height:1.7;"><strong style="color:#C8CFCB;">Sales Design S.r.l.</strong><br>Galleria Passarella 1, 20122 &mdash; Milano</div>' +
     '</td></tr>' +
   '</table></td></tr></table>';
@@ -818,7 +830,7 @@ function inviaMailMensileUno_(p, cur, prev, B, target, rec, refM, refY, curM, cu
         (sopra ? 'Ottimo mese: hai chiuso <strong style="color:#FFFFFF;">' + cur + '</strong> contratti, sopra la media della rete. '
                : 'Hai chiuso <strong style="color:#FFFFFF;">' + cur + '</strong> contratti. Con un piccolo recupero torni in media rete. ') +
         'Il target è calcolato sulla media aziendale per venditore più il recupero da fare.</div></td></tr>' +
-    '<tr><td bgcolor="#0A0F0E" style="background-color:#0A0F0E;border-top:1px solid #2E3A38;padding:16px 26px;text-align:center;">' +
+    '<tr><td bgcolor="#0A0F0E" style="background-color:#0A0F0E;border-top:1px solid #2E3A38;padding:16px 26px;text-align:center;">' + btnSegnala_('Report mensile') +
       '<div style="color:#8A918D;font-size:11px;line-height:1.7;"><strong style="color:#C8CFCB;">Sales Design S.r.l.</strong><br>Daily Deal Tracker · report automatico mensile</div></td></tr>' +
   '</table></td></tr></table>';
 

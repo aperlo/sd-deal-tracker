@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Daily Deal Tracker â€” Granda Solutions</title>
+<title>Daily Deal Tracker — Granda Solutions</title>
 <style>
 
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -16,7 +16,7 @@
     color: #E2E8E4;
   }
 
-  /* â”€â”€ HERO BAND neroâ†’arancio â”€â”€ */
+  /* ── HERO BAND nero→arancio ── */
   .hero-band {
     background: linear-gradient(135deg, #0A0F0E 0%, #1A1208 40%, #FF941A 100%);
     padding: 28px 24px 22px;
@@ -77,7 +77,7 @@
   }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-  /* â”€â”€ RECIPIENT LEGEND â”€â”€ */
+  /* ── RECIPIENT LEGEND ── */
   .recipient-legend {
     display: flex;
     gap: 8px;
@@ -102,7 +102,7 @@
   .ld-dircomm     { background:#FF941A; }
   .ld-agente      { background:#2EC4A0; }
 
-  /* â”€â”€ FORM â”€â”€ */
+  /* ── FORM ── */
   .form-wrap { max-width:560px; margin:0 auto; padding:24px 20px 48px; }
 
   .section-hdr {
@@ -209,9 +209,9 @@
 <body>
 
 <div class="hero-band">
-  <div class="hero-brand">Sales Design Â· Deal Tracker</div>
+  <div class="hero-brand">Sales Design · Deal Tracker</div>
   <div class="hero-title">Daily Sales Tracker</div>
-  <div class="hero-subtitle">Registrazione merchant Â· Nuovo sistema</div>
+  <div class="hero-subtitle">Registrazione merchant · Nuovo sistema</div>
   <div class="channel-badge"><span class="dot"></span>Granda Solutions</div>
 </div>
 
@@ -241,7 +241,7 @@
       <input type="text" id="agente_nome" placeholder="Nome e cognome" required>
     </div>
     <div class="field">
-      <label>Email agente (opzionale â€” per ricevere conferma)</label>
+      <label>Email agente (opzionale — per ricevere conferma)</label>
       <input type="email" id="emailAgente" placeholder="agente@esempio.it">
     </div>
     <div class="field">
@@ -263,7 +263,7 @@
       <div class="field">
         <label>Provincia <span class="req">*</span></label>
         <select id="provincia" required>
-          <option value="">â€” seleziona â€”</option>
+          <option value="">— seleziona —</option>
           <option>AG</option>
           <option>AL</option>
           <option>AN</option>
@@ -375,7 +375,7 @@
       </div>
     </div>
     <div class="field">
-      <label>Fatturato mensile stimato (â‚¬) <span class="req">*</span></label>
+      <label>Fatturato mensile stimato (€) <span class="req">*</span></label>
       <input type="number" id="fatturatoMese" placeholder="es. 25000" min="0" required>
     </div>
 
@@ -385,18 +385,18 @@
       <div class="field">
         <label>Tipo dispositivo <span class="req">*</span></label>
         <select id="tipoDispositivo" required>
-          <option value="">â€” seleziona â€”</option>
+          <option value="">— seleziona —</option>
           <option value="Standard">Standard</option>
           <option value="Lite">Lite</option>
         </select>
       </div>
       <div class="field">
-        <label>NÂ° dispositivi <span class="req">*</span></label>
+        <label>N° dispositivi <span class="req">*</span></label>
         <input type="number" id="numeroDispositivi" placeholder="1" min="1" required>
       </div>
     </div>
     <div class="field">
-      <label>Pricing (â‚¬/mese) <span class="req">*</span></label>
+      <label>Pricing (€/mese) <span class="req">*</span></label>
       <input type="text" id="pricing" readonly placeholder="automatico dal dispositivo">
     </div>
     <div class="row-2">
@@ -407,7 +407,7 @@
       <div class="field">
         <label>Tariffa Domestic <span class="req">*</span></label>
         <select id="tariffaDomestic" required>
-          <option value="">â€” seleziona â€”</option>
+          <option value="">— seleziona —</option>
           <option value="0,80%">0,80%</option>
           <option value="0,70%">0,70%</option>
           <option value="0,60%">0,60%</option>
@@ -419,10 +419,10 @@
 
     <div class="field">
       <label>Note libere</label>
-      <textarea id="note" placeholder="Informazioni aggiuntive, condizioni specialiâ€¦"></textarea>
+      <textarea id="note" placeholder="Informazioni aggiuntive, condizioni speciali…"></textarea>
     </div>
 
-    <button type="submit" class="btn-submit" id="submitBtn">Registra deal â†’</button>
+    <button type="submit" class="btn-submit" id="submitBtn">Registra deal →</button>
   </form>
 </div>
 
@@ -452,12 +452,12 @@ document.getElementById('dealForm').addEventListener('submit', async function(e)
   e.preventDefault();
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
-  btn.textContent = 'Invio in corsoâ€¦';
+  btn.textContent = 'Invio in corso…';
 
   const piva = document.getElementById('partitaIva').value.trim();
   if (!/^\d{11}$/.test(piva)) {
     toast('Partita IVA non valida: inserire esattamente 11 cifre', 'error');
-    btn.disabled = false; btn.textContent = 'Registra deal â†’';
+    btn.disabled = false; btn.textContent = 'Registra deal →';
     return;
   }
 
@@ -480,21 +480,18 @@ document.getElementById('dealForm').addEventListener('submit', async function(e)
 
   try {
     await fetch(ENDPOINT, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-    toast('âœ“ Deal registrato correttamente!');
-    setTimeout(() => {
-      ['agente','emailAgente','ragioneSociale','partitaIva','fatturatoMese','note'].forEach(id => {
-        document.getElementById(id).value = '';
-      });
-      ['provincia','tipoDispositivo','pricing','tariffaPay','tariffaDomestic','numeroDispositivi'].forEach(id => {
-        document.getElementById(id).value = '';
-      });
-    }, 1500);
+        this.style.display='none';
+    var ok=document.createElement('div');
+    ok.style.cssText='text-align:center;padding:48px 20px;';
+    ok.innerHTML='<div style="font-size:56px;line-height:1;color:#3FD9B3;margin-bottom:14px">&#10003;</div>'+'<h2 style="color:#fff;font-size:22px;margin:0 0 8px">Deal registrato!</h2>'+'<p style="color:#C8CFCB;font-size:14px;line-height:1.6;margin:0 0 24px">Il contratto &egrave; stato inviato e tracciato correttamente.</p>'+'<button type="button" class="btn-submit" style="max-width:320px;margin:0 auto" onclick="location.reload()">Registra un altro deal</button>';
+    this.parentNode.appendChild(ok);
+    window.scrollTo({top:0,behavior:'smooth'});
   } catch(err) {
     toast('Errore di rete. Riprova.', 'error');
   }
 
   btn.disabled = false;
-  btn.textContent = 'Registra deal â†’';
+  btn.textContent = 'Registra deal →';
 });
 
 </script>
