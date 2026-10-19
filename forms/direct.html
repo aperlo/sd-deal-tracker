@@ -251,122 +251,21 @@
       <label>Ragione sociale <span class="req">*</span></label>
       <input type="text" id="ragioneSociale" placeholder="Nome azienda" required>
     </div>
+    <div class="field">
+      <label>Partita IVA <span class="req">*</span></label>
+      <input type="text" id="partitaIva" placeholder="11 cifre" maxlength="11" inputmode="numeric" required>
+    </div>
     <div class="row-2">
       <div class="field">
-        <label>Partita IVA <span class="req">*</span></label>
-        <input type="text" id="partitaIva" placeholder="11 cifre" maxlength="11" inputmode="numeric" required>
+        <label>Regione <span class="req">*</span></label>
+        <select id="regione" required>
+          <option value="">seleziona la regione</option>
+        </select>
       </div>
       <div class="field">
         <label>Provincia <span class="req">*</span></label>
-        <select id="provincia" required>
-          <option value="">— seleziona —</option>
-          <option>AG</option>
-          <option>AL</option>
-          <option>AN</option>
-          <option>AO</option>
-          <option>AP</option>
-          <option>AQ</option>
-          <option>AR</option>
-          <option>AT</option>
-          <option>AV</option>
-          <option>BA</option>
-          <option>BG</option>
-          <option>BI</option>
-          <option>BL</option>
-          <option>BN</option>
-          <option>BO</option>
-          <option>BR</option>
-          <option>BS</option>
-          <option>BT</option>
-          <option>BZ</option>
-          <option>CA</option>
-          <option>CB</option>
-          <option>CE</option>
-          <option>CH</option>
-          <option>CL</option>
-          <option>CN</option>
-          <option>CO</option>
-          <option>CR</option>
-          <option>CS</option>
-          <option>CT</option>
-          <option>CZ</option>
-          <option>EN</option>
-          <option>FC</option>
-          <option>FE</option>
-          <option>FG</option>
-          <option>FI</option>
-          <option>FM</option>
-          <option>FR</option>
-          <option>GE</option>
-          <option>GO</option>
-          <option>GR</option>
-          <option>IM</option>
-          <option>IS</option>
-          <option>KR</option>
-          <option>LC</option>
-          <option>LE</option>
-          <option>LI</option>
-          <option>LO</option>
-          <option>LT</option>
-          <option>LU</option>
-          <option>MB</option>
-          <option>MC</option>
-          <option>ME</option>
-          <option>MI</option>
-          <option>MN</option>
-          <option>MO</option>
-          <option>MS</option>
-          <option>MT</option>
-          <option>NA</option>
-          <option>NO</option>
-          <option>NU</option>
-          <option>OR</option>
-          <option>PA</option>
-          <option>PC</option>
-          <option>PD</option>
-          <option>PE</option>
-          <option>PG</option>
-          <option>PI</option>
-          <option>PN</option>
-          <option>PO</option>
-          <option>PR</option>
-          <option>PT</option>
-          <option>PU</option>
-          <option>PV</option>
-          <option>PZ</option>
-          <option>RA</option>
-          <option>RC</option>
-          <option>RE</option>
-          <option>RG</option>
-          <option>RI</option>
-          <option>RM</option>
-          <option>RN</option>
-          <option>RO</option>
-          <option>SA</option>
-          <option>SI</option>
-          <option>SO</option>
-          <option>SP</option>
-          <option>SR</option>
-          <option>SS</option>
-          <option>SU</option>
-          <option>SV</option>
-          <option>TA</option>
-          <option>TE</option>
-          <option>TN</option>
-          <option>TO</option>
-          <option>TP</option>
-          <option>TR</option>
-          <option>TS</option>
-          <option>TV</option>
-          <option>UD</option>
-          <option>VA</option>
-          <option>VB</option>
-          <option>VC</option>
-          <option>VE</option>
-          <option>VI</option>
-          <option>VR</option>
-          <option>VT</option>
-          <option>VV</option>
+        <select id="provincia" required disabled>
+          <option value="">scegli prima la regione</option>
         </select>
       </div>
     </div>
@@ -512,6 +411,16 @@ document.addEventListener('DOMContentLoaded',function(){
   if(dev) dev.addEventListener('change',sp);
   if(dom) dom.addEventListener('change',sy);
   sp(); sy();
+});
+</script>
+<script>/*sd-regprov*/
+document.addEventListener('DOMContentLoaded',function(){
+  var REGIONI={"Piemonte":["AL","AT","BI","CN","NO","TO","VB","VC"],"Valle d'Aosta":["AO"],"Lombardia":["BG","BS","CO","CR","LC","LO","MB","MI","MN","PV","SO","VA"],"Trentino-Alto Adige":["BZ","TN"],"Veneto":["BL","PD","RO","TV","VE","VI","VR"],"Friuli-Venezia Giulia":["GO","PN","TS","UD"],"Liguria":["GE","IM","SP","SV"],"Emilia-Romagna":["BO","FC","FE","MO","PC","PR","RA","RE","RN"],"Toscana":["AR","FI","GR","LI","LU","MS","PI","PO","PT","SI"],"Umbria":["PG","TR"],"Marche":["AN","AP","FM","MC","PU"],"Lazio":["FR","LT","RI","RM","VT"],"Abruzzo":["AQ","CH","PE","TE"],"Molise":["CB","IS"],"Campania":["AV","BN","CE","NA","SA"],"Puglia":["BA","BR","BT","FG","LE","TA"],"Basilicata":["MT","PZ"],"Calabria":["CS","CZ","KR","RC","VV"],"Sicilia":["AG","CL","CT","EN","ME","PA","RG","SR","TP"],"Sardegna":["CA","NU","OR","SS","SU"]};
+  var reg=document.getElementById('regione'),prov=document.getElementById('provincia');
+  if(!reg||!prov)return;
+  reg.innerHTML='<option value="">seleziona la regione</option>'+Object.keys(REGIONI).map(function(r){return '<option>'+r+'</option>';}).join('');
+  function fill(){var l=REGIONI[reg.value]||[];prov.innerHTML='<option value="">'+(reg.value?'seleziona provincia':'scegli prima la regione')+'</option>'+l.map(function(s){return '<option>'+s+'</option>';}).join('');prov.disabled=!reg.value;}
+  reg.addEventListener('change',fill);fill();
 });
 </script>
 </body>

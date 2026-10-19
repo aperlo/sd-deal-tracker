@@ -52,12 +52,30 @@ const CODICI = {
 };
 
 const NOME_TAB = "Master";
+// Tassonomia: RETE (SD/ATD) · TIPO (Direct/Agenzia/Area) · CANALE (nome specifico).
 const INTESTAZIONI = [
-  "Timestamp","Data","Canale","Tipo","Agente","Ragione Sociale",
+  "Timestamp","Data","Rete","Canale","Tipo","Agente","Ragione Sociale",
   "Partita IVA","Fatturato mese","Dispositivo","N dispositivi",
   "Pricing","Tariffa Pay","Tariffa Domestic","Provincia","Note","Email agente",
-  "Area Manager"   // (P) 17a colonna ADDITIVA — competenza AM, non tocca le colonne 1-16
+  "Area Manager"
 ];
+// Scrittura HEADER-DRIVEN: ogni valore va nella colonna con quella intestazione,
+// ovunque sia; le intestazioni mancanti vengono aggiunte in coda. Così il foglio
+// è a prova di colonne spostate/aggiunte a mano.
+function normHead_(h){ return String(h||"").toLowerCase().replace(/\s+/g," ").trim(); }
+function scriviRigaPerHeader_(valori){
+  const tab = apriTab();
+  let head = tab.getLastColumn()>0 ? tab.getRange(1,1,1,tab.getLastColumn()).getValues()[0].map(function(h){return String(h||"").trim();}) : [];
+  if (tab.getLastRow()===0 || head.join("")==="") { tab.getRange(1,1,1,INTESTAZIONI.length).setValues([INTESTAZIONI]); tab.setFrozenRows(1); head = INTESTAZIONI.slice(); }
+  const idx={}; head.forEach(function(h,i){ idx[normHead_(h)]=i; });
+  const row = new Array(head.length).fill("");
+  Object.keys(valori).forEach(function(k){
+    const key=normHead_(k); let c=idx[key];
+    if (c==null) { c=head.length; head.push(k); idx[key]=c; row.push(""); tab.getRange(1,c+1).setValue(k); }
+    row[c]=valori[k];
+  });
+  tab.appendRow(row);
+}
 
 /* ============================================================
    (P) ATTRIBUZIONE AREA MANAGER — ADDITIVO
@@ -106,21 +124,27 @@ function elabora(d, modalitaTest) {
   const dataIt = String(d.data).split("-").reverse().join("/");
   const ts     = Utilities.formatDate(adesso, "Europe/Rome", "dd/MM/yyyy HH:mm:ss");
 
-  apriTab().appendRow([
-    ts, dataIt, canale.canale, canale.tipo,
-    String(d.agente), String(d.ragioneSociale),
-    "'" + String(d.partitaIva),
-    Number(d.fatturatoMese),
-    String(d.tipoDispositivo),
-    Number(d.numeroDispositivi),
-    String(d.pricing),
-    String(d.tariffaPay),
-    String(d.tariffaDomestic),
-    String(d.provincia),
-    String(d.note || ""),
-    String(d.emailAgente || ""),
-    areaManagerDi_(canale)        // (P) colonna Area Manager
-  ]);
+  const rete = canale.tipo === "Area" ? "ATD" : "SD";   // ATD = Aree · SD = Direct + Agenzie
+  scriviRigaPerHeader_({
+    "Timestamp":         ts,
+    "Data":              dataIt,
+    "Rete":              rete,
+    "Canale":            canale.canale,
+    "Tipo":              canale.tipo,
+    "Agente":            String(d.agente),
+    "Ragione Sociale":   String(d.ragioneSociale),
+    "Partita IVA":       "'" + String(d.partitaIva),
+    "Fatturato mese":    Number(d.fatturatoMese),
+    "Dispositivo":       String(d.tipoDispositivo),
+    "N dispositivi":     Number(d.numeroDispositivi),
+    "Pricing":           String(d.pricing),
+    "Tariffa Pay":       String(d.tariffaPay),
+    "Tariffa Domestic":  String(d.tariffaDomestic),
+    "Provincia":         String(d.provincia),
+    "Note":              String(d.note || ""),
+    "Email agente":      String(d.emailAgente || ""),
+    "Area Manager":      areaManagerDi_(canale)
+  });
 
   // ---- ROUTING MAIL ----
   const emailComp = String(d.emailAgente || "").trim();
@@ -650,37 +674,46 @@ function leggiSales_() {
   const tab = doc.getSheetByName(NOME_TAB);
   if (!tab || tab.getLastRow() < 2) return [];
   const dati = tab.getDataRange().getValues();
-  // header-driven per Provincia (anche colonne aggiunte a mano) e Area Manager
-  const head = (dati[0] || []).map(h => String(h || "").trim().toLowerCase());
-  const provCols = [];
-  head.forEach((h, ix) => { if (h.indexOf("provincia") >= 0 || h === "prov") provCols.push(ix); });
-  if (provCols.indexOf(13) < 0) provCols.push(13);          // fallback posizione storica
-  let amCol = head.indexOf("area manager"); if (amCol < 0) amCol = 16;
+  // ── Lettura HEADER-DRIVEN: trova ogni campo dalla sua intestazione, con
+  //    fallback alla posizione storica. Regge colonne spostate/aggiunte. ──
+  const head = (dati[0] || []).map(function(h){ return String(h || "").trim().toLowerCase(); });
+  function col(names, fallback){ for (var i=0;i<names.length;i++){ var k=head.indexOf(names[i]); if(k>=0) return k; } return fallback; }
+  const cTs  = col(["timestamp"],0),              cData = col(["data"],1);
+  const cRete= col(["rete"],-1),                  cCan  = col(["canale"],2), cTipo = col(["tipo"],3);
+  const cAg  = col(["agente","nome agente","nome agenta"],4);
+  const cMerc= col(["ragione sociale","merchant","ragione soc."],5);
+  const cPiva= col(["partita iva","p.iva","piva"],6),  cFatt = col(["fatturato mese","fatturato"],7);
+  const cDisp= col(["dispositivo","tipo dispositivo"],8);
+  const cNd  = col(["n dispositivi","numero dispositivi","nr dispositivi"],9);
+  const cPr  = col(["pricing"],10),  cPay = col(["tariffa pay","tariffa revpay","revpay"],11),  cDom = col(["tariffa domestic","domestic"],12);
+  const cAM  = col(["area manager"],16);
+  const provCols = []; head.forEach(function(h,ix){ if(h.indexOf("provincia")>=0||h==="prov") provCols.push(ix); }); if(provCols.indexOf(13)<0) provCols.push(13);
   const out = [];
   for (let i = 1; i < dati.length; i++) {
     const r = dati[i];
-    if (!r[0] && !r[1]) continue;
-    const tipo = String(r[3] || "").trim();
-    const rete = tipo === "Area" ? "ATD" : "SD";   // Direct+Agenzia = SD · Area = ATD (AT)
+    if (!r[cTs] && !r[cData]) continue;
+    const tipo = String(r[cTipo] || "").trim();
+    let rete = cRete>=0 ? String(r[cRete]||"").trim().toUpperCase() : "";
+    if (rete !== "SD" && rete !== "ATD") rete = (tipo === "Area" ? "ATD" : "SD");   // fallback
     let prov = "";
     for (let c = 0; c < provCols.length; c++) { const n = normalizeProvincia_(r[provCols[c]]); if (n) { prov = n; break; } }
     out.push({
-      ts:         String(r[0] || ""),
-      data:       fmtDataIt_(r[1]),
-      canale:     String(r[2] || ""),
+      ts:         String(r[cTs] || ""),
+      data:       fmtDataIt_(r[cData]),
+      canale:     String(r[cCan] || ""),
       tipo:       tipo,
       rete:       rete,
-      agente:     String(r[4] || ""),
-      merchant:   String(r[5] || ""),
-      partitaIva: String(r[6] || "").replace(/^'/, ""),
-      fatturato:  Number(r[7]) || 0,
-      dispositivo:String(r[8] || ""),
-      nDisp:      Number(r[9]) || 0,
-      pricing:    String(r[10] || ""),
-      tariffaPay: String(r[11] || ""),
-      tariffaDom: String(r[12] || ""),
-      provincia:  prov,                      // sigla normalizzata (da sigla o da nome, in qualunque colonna)
-      am:         String(r[amCol] || "")     // (P) Area Manager di competenza
+      agente:     String(r[cAg] || ""),
+      merchant:   String(r[cMerc] || ""),
+      partitaIva: String(r[cPiva] || "").replace(/^'/, ""),
+      fatturato:  Number(r[cFatt]) || 0,
+      dispositivo:String(r[cDisp] || ""),
+      nDisp:      Number(r[cNd]) || 0,
+      pricing:    String(r[cPr] || ""),
+      tariffaPay: String(r[cPay] || ""),
+      tariffaDom: String(r[cDom] || ""),
+      provincia:  prov,
+      am:         String(r[cAM] || "")
     });
   }
   return out;
