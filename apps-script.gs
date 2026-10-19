@@ -282,12 +282,11 @@ function inviaDigestSupervisione() {
   const adesso = new Date();
   const ora    = adesso.getHours();
 
-  let oreFinestra;
-  if      (ora >= 21) oreFinestra = 3;
-  else if (ora >= 18) oreFinestra = 3;
-  else if (ora >= 15) oreFinestra = 3;
-  else if (ora >= 11) oreFinestra = 14;
-  else                oreFinestra = 24;
+  // 3 recap/giorno: 12 = mattina (08→12) · 18 = pomeriggio (12→18) · 08 = giornata (18 ieri→08)
+  let oreFinestra, titoloRecap;
+  if      (ora >= 18) { oreFinestra = 6;  titoloRecap = "Recap pomeriggio"; }
+  else if (ora >= 12) { oreFinestra = 4;  titoloRecap = "Recap mattina"; }
+  else                { oreFinestra = 14; titoloRecap = "Recap giornata"; }
   const dal = new Date(adesso.getTime() - oreFinestra * 60 * 60 * 1000);
 
   const dati = apriTab().getDataRange().getValues();
@@ -319,7 +318,7 @@ function inviaDigestSupervisione() {
 
   const oraFmt  = Utilities.formatDate(adesso, "Europe/Rome", "HH:mm");
   const dataFmt = Utilities.formatDate(adesso, "Europe/Rome", "dd/MM/yyyy");
-  const oggetto = "Riepilogo rete — " + deal.length + " contratt" + (deal.length === 1 ? "o" : "i") +
+  const oggetto = titoloRecap + " — " + deal.length + " contratt" + (deal.length === 1 ? "o" : "i") +
     " · " + dataFmt + " ore " + oraFmt;
 
   const righeHtml = deal.map(function(r, idx) {
@@ -414,10 +413,10 @@ function impostaTriggerDigest() {
   ScriptApp.getProjectTriggers().forEach(function(t) {
     if (t.getHandlerFunction() === "inviaDigestSupervisione") ScriptApp.deleteTrigger(t);
   });
-  [11, 15, 18, 21].forEach(function(ora) {
+  [8, 12, 18].forEach(function(ora) {
     ScriptApp.newTrigger("inviaDigestSupervisione").timeBased().everyDays(1).atHour(ora).create();
   });
-  Logger.log("Trigger impostati: 11:00, 15:00, 18:00, 21:00");
+  Logger.log("Trigger impostati: 08:00 (recap giornata), 12:00 (mattina), 18:00 (pomeriggio) — a desk + dir. comm.");
 }
 
 /* ============================================================
