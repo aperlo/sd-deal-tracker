@@ -31,13 +31,14 @@ const SUPERVISORI  = [MAIL_DESK, MAIL_DIRCOMM];          // digest: desk + direz
 const MODO_TEST      = false;
 const MAIL_TEST_DEST = "dealtracker.hub@gmail.com";     // dove arrivano le email in test
 
-// === INVIO EMAIL via SENDGRID (deliverability) ===============
+// === INVIO EMAIL via BREVO (deliverability) ==================
 // Le mail NON partono piu' da MailApp (account Gmail nuovo bloccato da Google
-// sugli invii esterni), ma dall'API transazionale SendGrid, che consegna.
-// SendGrid "Single Sender" accetta un mittente Gmail senza possedere un dominio.
-// La API key va messa in: Impostazioni progetto (ingranaggio) ->
-// Proprieta' script -> nuova proprieta' SENDGRID_API_KEY (NON nel codice).
-const MAIL_FROM = MAIL_DESK;   // mittente: deve coincidere col Single Sender VERIFICATO su SendGrid
+// sugli invii esterni), ma dall'API transazionale Brevo, che consegna.
+// La API key va in: Impostazioni progetto (ingranaggio) -> Proprieta' script
+// -> BREVO_API_KEY (NON nel codice). Il mittente qui sotto DEVE coincidere con
+// il sender verificato su Brevo; se hai verificato un ALTRO indirizzo, aggiungi
+// una proprieta' script MAIL_FROM con quell'indirizzo esatto (ha la precedenza).
+const MAIL_FROM = MAIL_DESK;   // mittente di default: dev'essere un sender VERIFICATO su Brevo
 
 const COLORI = {
   dircomm:     "#FF941A",   // arancio  — Direzione Commerciale
@@ -205,9 +206,11 @@ function btnSegnala_(oggetto) {
 }
 
 /* ============================================================
-   INVIO EMAIL — SendGrid API (sostituisce MailApp.sendEmail)
-   Destinatari: stringa "a@x,b@y" oppure array. Richiede la
-   proprieta' script SENDGRID_API_KEY e un Single Sender verificato = MAIL_FROM.
+   INVIO EMAIL — Brevo API (sostituisce MailApp.sendEmail)
+   Destinatari: stringa "a@x,b@y" oppure array. Richiede la proprieta'
+   script BREVO_API_KEY e un sender verificato su Brevo = MAIL_FROM
+   (o la proprieta' script MAIL_FROM, se presente).
+   Logga SEMPRE la risposta di Brevo per diagnosi (vedi Esecuzioni).
    ============================================================ */
 function inviaEmail_(destinatari, subject, html, text) {
   var lista = (Array.isArray(destinatari) ? destinatari : String(destinatari).split(","))
@@ -215,24 +218,19 @@ function inviaEmail_(destinatari, subject, html, text) {
     .filter(function(e){ return e.length > 0; })
     .map(function(e){ return { email: e }; });
   if (!lista.length) return;
-  var key = PropertiesService.getScriptProperties().getProperty("SENDGRID_API_KEY") || "";
-  if (!key) { Logger.log("SENDGRID_API_KEY mancante: email NON inviata a " + JSON.stringify(lista)); return; }
-  var content = [];
-  if (text) content.push({ type: "text/plain", value: text });   // plain PRIMA di html (richiesto da SendGrid)
-  content.push({ type: "text/html", value: html });
-  var payload = {
-    personalizations: [{ to: lista }],
-    from: { email: MAIL_FROM, name: MITTENTE },
-    subject: subject,
-    content: content
-  };
-  var resp = UrlFetchApp.fetch("https://api.sendgrid.com/v3/mail/send", {
+  var props = PropertiesService.getScriptProperties();
+  var key = props.getProperty("BREVO_API_KEY") || props.getProperty("SENDGRID_API_KEY") || "";
+  if (!key) { Logger.log("API key mancante (BREVO_API_KEY): email NON inviata a " + JSON.stringify(lista)); return; }
+  var from = props.getProperty("MAIL_FROM") || MAIL_FROM;
+  var payload = { sender: { name: MITTENTE, email: from }, to: lista, subject: subject, htmlContent: html };
+  if (text) payload.textContent = text;
+  var resp = UrlFetchApp.fetch("https://api.brevo.com/v3/smtp/email", {
     method: "post", contentType: "application/json",
-    headers: { "Authorization": "Bearer " + key },
+    headers: { "api-key": key, "accept": "application/json" },
     payload: JSON.stringify(payload), muteHttpExceptions: true
   });
   var code = resp.getResponseCode();
-  if (code >= 300) Logger.log("SendGrid errore " + code + ": " + resp.getContentText());
+  Logger.log("Brevo " + code + (code >= 300 ? (" ERRORE: " + resp.getContentText()) : (" OK (mittente " + from + ") -> " + JSON.stringify(lista))));
   return code;
 }
 
