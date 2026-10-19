@@ -31,6 +31,13 @@ const SUPERVISORI  = [MAIL_DESK, MAIL_DIRCOMM];          // digest: desk + direz
 const MODO_TEST      = false;
 const MAIL_TEST_DEST = "dealtracker.hub@gmail.com";     // dove arrivano le email in test
 
+// === INVIO EMAIL via BREVO (deliverability) ==================
+// Le mail NON partono piu' da MailApp (account Gmail nuovo bloccato da Google
+// sugli invii esterni), ma dall'API transazionale Brevo, che consegna.
+// La API key va messa in: Impostazioni progetto (ingranaggio) ->
+// Proprieta' script -> nuova proprieta' BREVO_API_KEY (NON nel codice).
+const MAIL_FROM = MAIL_DESK;   // mittente: deve coincidere col sender VERIFICATO su Brevo
+
 const COLORI = {
   dircomm:     "#FF941A",   // arancio  — Direzione Commerciale
   salesdesk:   "#6366F1",   // indaco   — Sales Tracker Desk
@@ -197,6 +204,31 @@ function btnSegnala_(oggetto) {
 }
 
 /* ============================================================
+   INVIO EMAIL — Brevo API (sostituisce MailApp.sendEmail)
+   Destinatari: stringa "a@x,b@y" oppure array. Richiede la
+   proprieta' script BREVO_API_KEY e un sender verificato = MAIL_FROM.
+   ============================================================ */
+function inviaEmail_(destinatari, subject, html, text) {
+  var lista = (Array.isArray(destinatari) ? destinatari : String(destinatari).split(","))
+    .map(function(e){ return String(e).trim(); })
+    .filter(function(e){ return e.length > 0; })
+    .map(function(e){ return { email: e }; });
+  if (!lista.length) return;
+  var key = PropertiesService.getScriptProperties().getProperty("BREVO_API_KEY") || "";
+  if (!key) { Logger.log("BREVO_API_KEY mancante: email NON inviata a " + JSON.stringify(lista)); return; }
+  var payload = { sender: { name: MITTENTE, email: MAIL_FROM }, to: lista, subject: subject, htmlContent: html };
+  if (text) payload.textContent = text;
+  var resp = UrlFetchApp.fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "post", contentType: "application/json",
+    headers: { "api-key": key, "accept": "application/json" },
+    payload: JSON.stringify(payload), muteHttpExceptions: true
+  });
+  var code = resp.getResponseCode();
+  if (code >= 300) Logger.log("Brevo errore " + code + ": " + resp.getContentText());
+  return code;
+}
+
+/* ============================================================
    MAIL CONFERMA
    ============================================================ */
 function inviaConferma(d, canale, dataIt, destinatari, ccList, bccList, colore, tag, isTest) {
@@ -264,13 +296,8 @@ function inviaConferma(d, canale, dataIt, destinatari, ccList, bccList, colore, 
     "\nRevPay: " + d.tariffaPay + "\nDomestic: " + d.tariffaDomestic +
     "\nRiga: " + rigaCopia;
 
-  const opzioni = { htmlBody: html, name: MITTENTE };
   const dest = MODO_TEST ? [MAIL_TEST_DEST] : destinatari;   // in test: solo a te
-  if (!MODO_TEST && !isTest) {
-    if (ccList.length)  opzioni.cc  = ccList.join(",");
-    if (bccList.length) opzioni.bcc = bccList.join(",");
-  }
-  MailApp.sendEmail(dest.join(","), (MODO_TEST ? "[TEST] " : "") + oggetto, testo, opzioni);
+  inviaEmail_(dest, (MODO_TEST ? "[TEST] " : "") + oggetto, html, testo);
 }
 
 /* ============================================================
@@ -389,7 +416,7 @@ function inviaDigestSupervisione() {
     "\n\n" + deal.map(function(r){ return r.ts + " · " + r.canale + " · " + r.agente + " · " + r.merchant + " (" + r.provincia + ")"; }).join("\n");
 
   const destDigest = MODO_TEST ? MAIL_TEST_DEST : SUPERVISORI.join(",");   // in test: solo a te
-  MailApp.sendEmail(destDigest, (MODO_TEST ? "[TEST] " : "") + oggetto, testo, { htmlBody: html, name: MITTENTE });
+  inviaEmail_(destDigest, (MODO_TEST ? "[TEST] " : "") + oggetto, html, testo);
   Logger.log("Digest inviato: " + deal.length + " deal a " + destDigest);
 }
 
@@ -954,7 +981,7 @@ function inviaMailMensileUno_(p, cur, prev, B, target, rec, refM, refY, curM, cu
     "Target " + meseTarget + ": " + target + (rec>0 ? ("  (recupera +" + rec + ")") : "  (sei sopra media)") + "\n\n" +
     "Sales Design — Daily Deal Tracker";
 
-  MailApp.sendEmail(dest, oggetto, testo, { htmlBody: html, name: MITTENTE });
+  inviaEmail_(dest, oggetto, html, testo);
 }
 
 /* Trigger: esegui UNA VOLTA per schedulare l'invio il giorno 1 di ogni mese alle 9. */
