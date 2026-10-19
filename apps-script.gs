@@ -31,12 +31,13 @@ const SUPERVISORI  = [MAIL_DESK, MAIL_DIRCOMM];          // digest: desk + direz
 const MODO_TEST      = false;
 const MAIL_TEST_DEST = "dealtracker.hub@gmail.com";     // dove arrivano le email in test
 
-// === INVIO EMAIL via BREVO (deliverability) ==================
+// === INVIO EMAIL via SENDGRID (deliverability) ===============
 // Le mail NON partono piu' da MailApp (account Gmail nuovo bloccato da Google
-// sugli invii esterni), ma dall'API transazionale Brevo, che consegna.
+// sugli invii esterni), ma dall'API transazionale SendGrid, che consegna.
+// SendGrid "Single Sender" accetta un mittente Gmail senza possedere un dominio.
 // La API key va messa in: Impostazioni progetto (ingranaggio) ->
-// Proprieta' script -> nuova proprieta' BREVO_API_KEY (NON nel codice).
-const MAIL_FROM = MAIL_DESK;   // mittente: deve coincidere col sender VERIFICATO su Brevo
+// Proprieta' script -> nuova proprieta' SENDGRID_API_KEY (NON nel codice).
+const MAIL_FROM = MAIL_DESK;   // mittente: deve coincidere col Single Sender VERIFICATO su SendGrid
 
 const COLORI = {
   dircomm:     "#FF941A",   // arancio  — Direzione Commerciale
@@ -204,9 +205,9 @@ function btnSegnala_(oggetto) {
 }
 
 /* ============================================================
-   INVIO EMAIL — Brevo API (sostituisce MailApp.sendEmail)
+   INVIO EMAIL — SendGrid API (sostituisce MailApp.sendEmail)
    Destinatari: stringa "a@x,b@y" oppure array. Richiede la
-   proprieta' script BREVO_API_KEY e un sender verificato = MAIL_FROM.
+   proprieta' script SENDGRID_API_KEY e un Single Sender verificato = MAIL_FROM.
    ============================================================ */
 function inviaEmail_(destinatari, subject, html, text) {
   var lista = (Array.isArray(destinatari) ? destinatari : String(destinatari).split(","))
@@ -214,17 +215,24 @@ function inviaEmail_(destinatari, subject, html, text) {
     .filter(function(e){ return e.length > 0; })
     .map(function(e){ return { email: e }; });
   if (!lista.length) return;
-  var key = PropertiesService.getScriptProperties().getProperty("BREVO_API_KEY") || "";
-  if (!key) { Logger.log("BREVO_API_KEY mancante: email NON inviata a " + JSON.stringify(lista)); return; }
-  var payload = { sender: { name: MITTENTE, email: MAIL_FROM }, to: lista, subject: subject, htmlContent: html };
-  if (text) payload.textContent = text;
-  var resp = UrlFetchApp.fetch("https://api.brevo.com/v3/smtp/email", {
+  var key = PropertiesService.getScriptProperties().getProperty("SENDGRID_API_KEY") || "";
+  if (!key) { Logger.log("SENDGRID_API_KEY mancante: email NON inviata a " + JSON.stringify(lista)); return; }
+  var content = [];
+  if (text) content.push({ type: "text/plain", value: text });   // plain PRIMA di html (richiesto da SendGrid)
+  content.push({ type: "text/html", value: html });
+  var payload = {
+    personalizations: [{ to: lista }],
+    from: { email: MAIL_FROM, name: MITTENTE },
+    subject: subject,
+    content: content
+  };
+  var resp = UrlFetchApp.fetch("https://api.sendgrid.com/v3/mail/send", {
     method: "post", contentType: "application/json",
-    headers: { "api-key": key, "accept": "application/json" },
+    headers: { "Authorization": "Bearer " + key },
     payload: JSON.stringify(payload), muteHttpExceptions: true
   });
   var code = resp.getResponseCode();
-  if (code >= 300) Logger.log("Brevo errore " + code + ": " + resp.getContentText());
+  if (code >= 300) Logger.log("SendGrid errore " + code + ": " + resp.getContentText());
   return code;
 }
 
