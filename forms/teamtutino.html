@@ -387,9 +387,7 @@
         <select id="tipoDispositivo" required>
           <option value="">â€” seleziona â€”</option>
           <option value="Standard">Standard</option>
-          <option value="Mini">Mini</option>
-          <option value="Mobile">Mobile</option>
-          <option value="Integrato">Integrato</option>
+          <option value="Lite">Lite</option>
         </select>
       </div>
       <div class="field">
@@ -399,29 +397,12 @@
     </div>
     <div class="field">
       <label>Pricing (â‚¬/mese) <span class="req">*</span></label>
-      <select id="pricing" required>
-        <option value="">â€” seleziona â€”</option>
-        <option value="0">0 (incluso)</option>
-        <option value="15">15</option>
-        <option value="29">29</option>
-        <option value="49">49</option>
-        <option value="79">79</option>
-        <option value="99">99</option>
-        <option value="129">129</option>
-        <option value="149">149</option>
-        <option value="189">189</option>
-        <option value="249">249</option>
-      </select>
+      <input type="text" id="pricing" readonly placeholder="automatico dal dispositivo">
     </div>
     <div class="row-2">
       <div class="field">
         <label>Tariffa RevPay <span class="req">*</span></label>
-        <select id="tariffaPay" required>
-          <option value="">â€” seleziona â€”</option>
-          <option value="0,80%">0,80%</option>
-          <option value="0,70%">0,70%</option>
-          <option value="0,60%">0,60%</option>
-        </select>
+        <input type="text" id="tariffaPay" readonly placeholder="automatico">
       </div>
       <div class="field">
         <label>Tariffa Domestic <span class="req">*</span></label>
@@ -525,6 +506,19 @@ document.addEventListener('DOMContentLoaded',function(){
     el.style.textTransform='uppercase';
     el.addEventListener('input',function(){var s=el.selectionStart,e=el.selectionEnd,u=el.value.toUpperCase();if(u!==el.value){el.value=u;try{el.setSelectionRange(s,e);}catch(_){}}});
   });
+});
+</script>
+<script>/*sd-fields*/
+document.addEventListener('DOMContentLoaded',function(){
+  var dev=document.getElementById('tipoDispositivo'),pr=document.getElementById('pricing');
+  var dom=document.getElementById('tariffaDomestic'),pay=document.getElementById('tariffaPay');
+  var PRICE={Standard:'189',Lite:'139'};
+  var PAY={'0,80%':'0,50%','0,70%':'0,40%','0,60%':'0,30%'};
+  function sp(){ if(dev&&pr) pr.value=PRICE[dev.value]||''; }
+  function sy(){ if(dom&&pay) pay.value=PAY[dom.value]||''; }
+  if(dev) dev.addEventListener('change',sp);
+  if(dom) dom.addEventListener('change',sy);
+  sp(); sy();
 });
 </script>
 </body>
