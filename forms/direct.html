@@ -230,8 +230,8 @@
       <input type="text" id="agente" placeholder="Nome e cognome" required>
     </div>
     <div class="field">
-      <label>Email agente (opzionale — per ricevere conferma)</label>
-      <input type="email" id="emailAgente" placeholder="agente@esempio.it">
+      <label>Email agente <span class="req">*</span></label>
+      <input type="email" id="emailAgente" placeholder="agente@esempio.it" required>
     </div>
     <div class="field">
       <label>Data deal <span class="req">*</span></label>
@@ -338,7 +338,7 @@ function toast(msg, tipo) {
 
 document.getElementById('dealForm').addEventListener('submit', async function(e) {
   e.preventDefault();
-  const btn = document.getElementById('submitBtn');
+  var _em=document.getElementById('emailAgente').value.trim(); if(!/.+@.+\..+/.test(_em)){toast('Email agente obbligatoria: inseriscila per ricevere la conferma','error');return;} const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   btn.textContent = 'Invio in corso…';
 
