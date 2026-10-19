@@ -247,7 +247,7 @@ tfoot td{padding:12px 18px;font-size:13px;font-weight:700;border-top:1px solid v
 #view-recruiting .track i.warn{background:linear-gradient(90deg,var(--warn),var(--brand))}
 #view-recruiting .track i.over{background:var(--neg)}
 #view-recruiting .idx{font-weight:700}
-#view-recruiting .idx.hi{color:var(--pos)} #view-recruiting .idx.mid{color:var(--muted)} #view-recruiting .idx.lo{color:var(--neg)}
+#view-recruiting .idx.hi{color:var(--pos)} #view-recruiting .idx.mid{color:var(--muted)} #view-recruiting .idx.lo{color:var(--neg)} #view-recruiting .idx.na{color:var(--faint)}
 #view-recruiting .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:13px}
 #view-recruiting .pcard{background:linear-gradient(180deg,rgba(255,255,255,.028),transparent 45%),var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:11px;transition:.2s}
 #view-recruiting .pcard:hover{transform:translateY(-3px);border-color:var(--violet)}
@@ -668,7 +668,7 @@ details.fold>div{padding:2px 0 16px}
   <div class="g2" style="margin-top:0">
     <div class="card tbl-c"><div class="pad" style="padding-bottom:0;display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div><div class="card-t">Classifica</div><div class="card-s" id="rankSub">Per sales · periodo</div></div>
       <select id="rankBy" style="min-width:150px"><option value="sales">Per sales</option><option value="canale">Per canale</option><option value="am">Per area manager</option><option value="rete">Per rete</option></select></div>
-      <table style="margin-top:12px"><thead><tr><th class="rank">#</th><th id="rankCol1">Agente</th><th id="rankCol2">Canale prevalente</th><th class="num">Contratti</th></tr></thead><tbody id="agentiTable"><tr><td colspan="4" class="empty">Caricamento…</td></tr></tbody></table></div>
+      <table style="margin-top:12px"><thead><tr><th class="rank">#</th><th id="rankCol1">Agente</th><th id="rankCol2" title="Il canale su cui chiude più contratti">Canale</th><th class="num">Contratti</th></tr></thead><tbody id="agentiTable"><tr><td colspan="4" class="empty">Caricamento…</td></tr></tbody></table></div>
     <div class="card tbl-c"><div class="pad" style="padding-bottom:0"><div class="card-t">Contratti per provincia</div><div class="card-s">Ordinati per volume</div></div>
       <table style="margin-top:12px"><thead><tr><th class="rank">#</th><th>Provincia</th><th>Tipo</th><th class="num" style="width:130px">Volume</th><th class="num">N.</th></tr></thead><tbody id="provTable"><tr><td colspan="5" class="empty">Caricamento…</td></tr></tbody></table></div>
   </div>
@@ -1153,7 +1153,7 @@ const Sales=(function(){
       if(!by[key])by[key]={label,n:0,fat:0,subc:{},merch:[]};const o=by[key];o.n++;o.fat+=(+r.fatturato||0);o.subc[sub]=(o.subc[sub]||0)+1;o.merch.push({m:r.merchant||"—",d:r.data||""});});
     const rows=Object.entries(by).sort((a,b)=>b[1].n-a[1].n).slice(0,15);const totN=rows.reduce((s,r)=>s+r[1].n,0)||1;
     document.getElementById("rankCol1").textContent={sales:"Agente",canale:"Canale",am:"Area Manager",rete:"Rete"}[dim];
-    document.getElementById("rankCol2").textContent={sales:"Canale prevalente",canale:"Tipo",am:"Canali",rete:"Quota"}[dim];
+    (function(){const c2=document.getElementById("rankCol2");c2.textContent={sales:"Canale",canale:"Tipo",am:"Canali",rete:"Quota"}[dim];c2.title={sales:"Il canale su cui questo sales chiude più contratti",canale:"Tipo di canale (Direct/Agenzia/Area)",am:"Numero di canali gestiti",rete:"Quota % sul totale"}[dim]||"";})();
     document.getElementById("rankSub").textContent=({sales:"Per sales",canale:"Per canale",am:"Per area manager",rete:"Per rete"}[dim])+" · "+hzLabel();
     $("agentiTable").innerHTML=rows.length?rows.map(([k,o],i)=>{let sub2;
       if(dim==="sales"||dim==="canale")sub2=Object.entries(o.subc).sort((a,b)=>b[1]-a[1])[0]?.[0]||"—";
@@ -1251,14 +1251,20 @@ const Recruiting=(function(){
   function qRange(){ const y=HZ.year,q=HZ.q; return [new Date(y,q*3,1), new Date(y,q*3+3,1)]; }
   const qLabel=()=>"Q"+(HZ.q+1)+" "+HZ.year;
 
-  function regionStats(){const tm=totMonthBy(),S={};REG.forEach(r=>{S[r]={r,persone:0,contratti:0};});
-    agenti.forEach(a=>{const r=regKey(a.regione);if(!S[r])return;S[r].persone++;S[r].contratti+=(tm[a.id]||0);});
-    const totC=REG.reduce((s,r)=>s+S[r].contratti,0),totP=REG.reduce((s,r)=>s+S[r].persone,0);
-    const avg=totP?totC/totP:0; // contratti per persona medi della rete
+  // Peso ponderato: un'agenzia/AM non vale 1 come un sales, ma quanto la sua squadra.
+  function personWeight(a){
+    if(a.ruolo==="AGENZIA") return Math.max(1,num(a.agenti));
+    if(a.ruolo==="AM"){ const team=agenti.filter(x=>x.parent===a.nome&&x.id!==a.id).length; return Math.max(1,team,num(a.diretti)); }
+    return 1;
+  }
+  function regionStats(){const tm=totMonthBy(),S={};REG.forEach(r=>{S[r]={r,persone:0,peso:0,contratti:0};});
+    agenti.forEach(a=>{const r=regKey(a.regione);if(!S[r])return;S[r].persone++;S[r].peso+=personWeight(a);S[r].contratti+=(tm[a.id]||0);});
+    const totC=REG.reduce((s,r)=>s+S[r].contratti,0),totPeso=REG.reduce((s,r)=>s+S[r].peso,0),totP=REG.reduce((s,r)=>s+S[r].persone,0);
+    const avg=totPeso?totC/totPeso:0; // contratti per "posizione" ponderata della rete
     const MIN_C=3,CAP=300; // indice solo da campione ≥3 contratti; cap per evitare valori fuori scala
-    REG.forEach(r=>{const x=S[r];x.cpp=x.persone?x.contratti/x.persone:0;
-      x.idx=(x.persone>0&&x.contratti>=MIN_C&&avg>0)?Math.min(CAP,Math.round(x.cpp/avg*100)):null;});
-    return{S,totC,totP,avg};}
+    REG.forEach(r=>{const x=S[r];x.cpp=x.persone?x.contratti/x.persone:0;x.cppW=x.peso?x.contratti/x.peso:0;
+      x.idx=(x.peso>0&&x.contratti>=MIN_C&&avg>0)?Math.min(CAP,Math.round(x.cppW/avg*100)):null;});
+    return{S,totC,totP,totPeso,avg};}
 
   function buildGeo(){if(built||!APP.geo.length)return;
     regions=APP.geo.map(f=>({name:regKey(f.n),feature:{type:"Feature",properties:{name:regKey(f.n)},geometry:{type:f.t,coordinates:f.c}}}));
@@ -1276,7 +1282,7 @@ const Recruiting=(function(){
   function stageColor(avg){const t=Math.max(0,Math.min(1,avg/5)),a=[100,108,122],b=[139,124,255];return"rgb("+Math.round(a[0]+(b[0]-a[0])*t)+","+Math.round(a[1]+(b[1]-a[1])*t)+","+Math.round(a[2]+(b[2]-a[2])*t)+")";}
   function idxColor(i){if(i==null)return"rgba(100,108,122,.16)";if(i>=120)return"rgba(52,216,168,.42)";if(i>=80)return"rgba(90,168,255,.3)";return"rgba(255,138,30,.34)";}
   function idxBubbleColor(i){if(i==null)return"#646C7A";if(i>=120)return"#34D8A8";if(i>=80)return"#5AA8FF";return"#FF8A1E";}
-  function idxClass(i){return i==null?"":i>=120?"hi":i>=80?"mid":"lo";}
+  function idxClass(i){return i==null?"na":i>=100?"hi":"lo";}
   function cityGroups(list){const out={},tm=totMonthBy();list.forEach(a=>{const region=regKey(a.regione);if(!region)return;const key=(a.citta||"")+"|"+region;out[key]=out[key]||{city:a.citta||"",region,persone:0,contratti:0,stageSum:0,members:[]};const g=out[key];g.persone++;g.contratti+=(tm[a.id]||0);g.stageSum+=num(a.stage);g.members.push(a);});return Object.keys(out).map(k=>out[k]);}
 
   function paint(){if(!built)return;const focusKey=hover||pinned;svg.classed("focus",!!focusKey);const RS=regionStats();
@@ -1308,11 +1314,16 @@ const Recruiting=(function(){
       ? '<div class="topc '+cls+'"><span class="medal">'+medal+'</span><div style="min-width:0"><div class="tc-l">'+label+'</div><div class="tc-n">'+esc(o.a.nome)+'</div></div><span class="tc-v">'+o.n+'</span></div>'
       : '<div class="topc '+cls+'"><span class="medal">'+medal+'</span><div><div class="tc-l">'+label+'</div><div class="tc-n muted">nessuno nel periodo</div></div></div>';
     el.innerHTML=c('','🥇','Top Seller',sellers[0])+c('am','👑','Top Area Manager',amRank[0])+c('ag','🏢','Top Agenzia',ags[0]); }
-  function showBub(c,ev){const RS=regionStats();const idx=RS.S[c.region]?RS.S[c.region].idx:null;const rows='<div class="r">Persone<strong>'+c.persone+'</strong></div><div class="r">Contratti<strong>'+c.contratti+'</strong></div><div class="r">Indice<strong>'+(idx==null?"n.d.":idx)+'</strong></div>';const names=c.members.slice(0,4).map(a=>esc(a.nome)).join(", ")+(c.members.length>4?" +"+(c.members.length-4):"");showTip('<b>'+esc(c.city||c.region)+'</b><div class="muted" style="margin-bottom:6px">'+esc(c.region)+'</div>'+rows+'<div class="muted" style="margin-top:6px">'+names+'</div>',ev);}
+  function showBub(c,ev){const RS=regionStats();const idx=RS.S[c.region]?RS.S[c.region].idx:null;const tm=totMonthBy();
+    const idxTxt=idx==null?"n.d.":((idx>=100?"▲ ":"▼ ")+idx);
+    const rows='<div class="r">Persone<strong>'+c.persone+'</strong></div><div class="r">Contratti<strong>'+c.contratti+'</strong></div><div class="r">Indice<strong>'+idxTxt+'</strong></div>';
+    let sd=0,atd=0;c.members.forEach(m=>{const n=tm[m.id]||0;if(m.rete==="ATD")atd+=n;else sd+=n;});const tot=sd+atd||1;const sdP=Math.round(sd/tot*100),atdP=100-sdP;
+    const mix=(sd+atd>0)?'<div style="margin-top:8px"><div style="height:7px;border-radius:4px;overflow:hidden;display:flex;background:#232834"><i style="width:'+sdP+'%;background:linear-gradient(90deg,#FF8A1E,#FFB366)"></i><i style="width:'+atdP+'%;background:linear-gradient(90deg,#8B7CFF,#A99BFF)"></i></div><div class="r" style="margin-top:5px;font-size:11px"><span style="color:#FF8A1E">SD '+sd+' · '+sdP+'%</span><span style="color:#8B7CFF">ATD '+atd+' · '+atdP+'%</span></div></div>':'';
+    const names=c.members.slice(0,4).map(a=>esc(a.nome)).join(", ")+(c.members.length>4?" +"+(c.members.length-4):"");showTip('<b>'+esc(c.city||c.region)+'</b><div class="muted" style="margin-bottom:6px">'+esc(c.region)+'</div>'+rows+mix+'<div class="muted" style="margin-top:6px">'+names+'</div>',ev);}
   function buildLegend(){$("#mLegend").innerHTML=mode==="perf"?'<div class="lg"><span class="lgd" style="background:var(--mint)"></span>Sopra media (≥120)</div><div class="lg"><span class="lgd" style="background:var(--sky)"></span>In linea (80–119)</div><div class="lg"><span class="lgd" style="background:var(--brand)"></span>Sotto media (&lt;80)</div><div class="lg"><span class="lgd" style="background:var(--faint)"></span>N.D.</div><div class="lg">Bolla = contratti</div>':'<div class="lg"><span class="lgd" style="background:var(--violet)"></span>Più persone</div><div class="lg">Bolla = persone · colore = avanzamento</div>';$("#mode-note").textContent=mode==="perf"?"Dimensione+colore = performance (contratti) della zona":"Dimensione = presenza · colore = avanzamento recruiting";}
   function buildMlist(RS){const rows=REG.map(r=>RS.S[r]).filter(s=>s.persone>0).sort((a,b)=>b.contratti-a.contratti||b.persone-a.persone);const max=Math.max.apply(null,[1].concat(rows.map(s=>s.contratti)));$("#m-h").textContent=selAM?"Linea di "+selAM.nome:"Tutta la rete";$("#mlist").classList.toggle("focus",!!(hover||pinned));$("#mlist").innerHTML=rows.length?rows.map(s=>{const hot=(hover===s.r)||(!hover&&pinned===s.r);return'<button type="button" class="row'+(hot?" hot":"")+'" data-r="'+esc(s.r)+'"><div class="nm">'+esc(s.r)+'<div class="track"><i style="width:'+Math.round(s.contratti/max*100)+'%"></i></div></div><span class="v">'+s.contratti+'</span></button>';}).join(""):'<div class="empty">Nessun contratto nel periodo.</div>';}
-  function renderZone(RS){const rows=REG.map(r=>RS.S[r]).sort((a,b)=>{if(a.idx==null&&b.idx==null)return b.persone-a.persone;if(a.idx==null)return 1;if(b.idx==null)return -1;return b.idx-a.idx;});$("#zone-rows").innerHTML=rows.map(s=>{const hot=(hover===s.r)||(!hover&&pinned===s.r);const idxTxt=s.idx==null?'<span class="muted">n.d.</span>':'<span class="idx '+idxClass(s.idx)+'">'+(s.idx>=120?"▲":s.idx>=80?"=":"▼")+' '+s.idx+'</span>';return'<tr data-r="'+esc(s.r)+'" class="'+(hot?"hot":"")+'"><td>'+esc(s.r)+'</td><td class="num">'+s.persone+'</td><td class="num">'+s.contratti+'</td><td class="num">'+(s.persone?s.cpp.toFixed(1):"–")+'</td><td class="num">'+idxTxt+'</td></tr>';}).join("");
-    $("#zone-note").innerHTML="Indice = (contratti/persona della zona) ÷ (media rete <b>"+RS.avg.toFixed(1)+"</b>) × 100 · 100 = in linea · &lt;80 = molte persone poca resa · calcolato solo con ≥3 contratti (campioni piccoli = n.d.), max 300.";
+  function renderZone(RS){const rows=REG.map(r=>RS.S[r]).sort((a,b)=>{if(a.idx==null&&b.idx==null)return b.persone-a.persone;if(a.idx==null)return 1;if(b.idx==null)return -1;return b.idx-a.idx;});$("#zone-rows").innerHTML=rows.map(s=>{const hot=(hover===s.r)||(!hover&&pinned===s.r);const idxTxt='<span class="idx '+idxClass(s.idx)+'">'+(s.idx==null?"▬ n.d.":(s.idx>=100?"▲ ":"▼ ")+s.idx)+'</span>';return'<tr data-r="'+esc(s.r)+'" class="'+(hot?"hot":"")+'"><td>'+esc(s.r)+'</td><td class="num">'+s.persone+'</td><td class="num">'+s.contratti+'</td><td class="num">'+(s.persone?s.cpp.toFixed(1):"–")+'</td><td class="num">'+idxTxt+'</td></tr>';}).join("");
+    $("#zone-note").innerHTML="Indice <b>ponderato</b>: contratti ÷ dimensione reale della squadra (un'agenzia/AM pesa quanto i suoi agenti, non come 1 persona) ÷ media rete × 100 · <span style='color:var(--pos)'>▲ ≥100</span> sopra media · <span style='color:var(--neg)'>▼ &lt;100</span> sotto · n.d. = meno di 3 contratti · max 300.";
     const cop=REG.map(r=>({r,n:RS.S[r].persone})).filter(x=>x.n<=1).sort((a,b)=>a.n-b.n);
     $("#cop-list").innerHTML=cop.length?cop.map(x=>{
       const ppl=agenti.filter(a=>regKey(a.regione)===x.r);
@@ -1511,7 +1522,7 @@ const HELP_TOPICS=[
   {id:"start",t:"Da dove parto",h:"Come leggere il cruscotto",b:"<p>Due sezioni in alto: <b>Sales Tracking</b> (i contratti) e <b>Team Recruiting</b> (la rete di persone).</p><p>In alto la <b>fascia filtri</b>: scegli la <b>Rete</b> (SD = Sales Design, arancio · ATD = Attitude, viola/blu) e il <b>periodo</b> (Anno / Trimestre / Mese / Settimana). Tutto il cruscotto si aggiorna su quel periodo.</p><p class='q'>Colore in alto a destra</p><p><b>Live</b> = dati reali dai Google Sheet · <b>Dati demo</b> = endpoint non raggiunto. Il tasto <b>Aggiorna</b> ricarica (l'icona gira mentre carica).</p>"},
   {id:"sales",t:"Sales",h:"Sezione Sales Tracking",b:"<p>La <b>fascia executive</b> in cima riassume contratti del periodo, split SD/ATD e gli alert.</p><p>I 4 riquadri <b>KPI</b>: contratti del periodo (con variazione % vs periodo precedente), merchant onboardati, dispositivi attivati, province/canali.</p><p class='q'>Andamento nel periodo</p><p>La curva piena è il periodo attuale; quella tratteggiata in sfondo è lo <b>stesso periodo precedente</b>, per capire se stai crescendo o calando.</p>"},
   {id:"eco",t:"Economics",h:"Proiezione guadagni",b:"<p>Sezione apribile. Applica i modelli di compenso ai contratti reali del periodo:</p><p><b>A · Sales</b>: tariffa a scaglioni (150→240 € a contratto).<br><b>B · Agency</b>: gettone fisso 250 € a contratto, calcolato per canale agenzia.<br><b>C · Override</b>: l'Area Manager prende 25/50 € su ogni contratto del suo team + i suoi contratti personali come Sales.</p><p>Il <b>simulatore</b> fa una stima rapida al variare dei contratti.</p>"},
-  {id:"perf",t:"Performance",h:"Cosa significa «performance»",b:"<p>La performance risponde a una domanda semplice: <b>a parità di persone, quanti contratti porta una zona?</b></p><p class='q'>Indice (Zone)</p><p>È <b>contratti per persona della zona ÷ media della rete × 100</b>.<br>• <b>100</b> = la zona rende come la media.<br>• <b>&gt;120</b> (verde ▲) = rende più della media.<br>• <b>&lt;80</b> (arancio ▼) = tante persone, pochi contratti → serve spinta.</p><p>Sulla <b>mappa</b>, in modalità Performance, la bolla più grande e verde = zona che produce di più.</p>"},
+  {id:"perf",t:"Performance",h:"Cosa significa «performance»",b:"<p>La performance risponde a: <b>a parità di squadra, quanti contratti porta una zona?</b></p><p class='q'>Indice ponderato (Zone)</p><p>È <b>contratti ÷ dimensione reale della squadra ÷ media rete × 100</b>. Un'<b>agenzia</b> o un <b>AM</b> non valgono 1 come un sales: pesano quanto i loro agenti/la loro linea. Così la zona con un'agenzia non risulta più gonfiata.</p><p>• <b style='color:#34D8A8'>▲ ≥100</b> = sopra la media rete.<br>• <b style='color:#FF6B6B'>▼ &lt;100</b> = sotto la media.<br>• <b>n.d.</b> = meno di 3 contratti (campione troppo piccolo).</p><p>Sulla <b>mappa</b>, in modalità Performance, la bolla più grande e verde = zona che produce di più. Nella scheda zona vedi anche lo split <b>SD/ATD</b>.</p>"},
   {id:"mappa",t:"Mappa",h:"Mappa della rete",b:"<p>In alto a sinistra sulla mappa c'è il <b>totale contratti del periodo</b> (più è grande il numero, più volume) e i <b>merchant Rev B attivi</b>.</p><p>Due modalità: <b>Presenza</b> (dimensione bolla = quante persone) e <b>Performance</b> (dimensione+colore = contratti prodotti).</p><p>Passa il mouse su una regione: fa un <b>flash</b> e la evidenzia. Clicca una regione (o scegli dal menu) per <b>zoomare</b>.</p>"},
   {id:"top",t:"Top",h:"Top performer",b:"<p>Le tre card in Recruiting mostrano, per il periodo scelto: <b>Top Seller</b> (chi chiude più contratti), <b>Top Area Manager</b> (più contratti su tutta la sua linea), <b>Top Agenzia</b> (il canale agenzia più produttivo).</p>"},
   {id:"fasi",t:"Fasi recruiting",h:"La piramide delle fasi",b:"<p>La <b>piramide ad acquario</b> mostra quante persone sono in ciascuna fase di ingaggio: dalla base (CALL) all'apice (MAPPA ATTIVA). Più acqua riempie la fascia, più persone sono in quella fase.</p><p>Le <b>fasi ferme</b> elencano chi è bloccato oltre 14/30/60 giorni.</p>"},
