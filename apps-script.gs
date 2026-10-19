@@ -203,7 +203,8 @@ function btnSegnala_(oggetto) {
    MAIL CONFERMA
    ============================================================ */
 function inviaConferma(d, canale, dataIt, destinatari, ccList, bccList, colore, tag, isTest) {
-  const oggetto = tag + 'Registrazione merchant "' + d.ragioneSociale + '" — ' + dataIt;
+  const reteOgg = canale.tipo === "Area" ? "ATD" : "SD";
+  const oggetto = tag + "NEW merchant by " + reteOgg + "/" + canale.canale + "/" + canale.tipo + " - " + d.ragioneSociale + " / " + dataIt;
   const euro    = "€ " + Number(d.fatturatoMese).toLocaleString("it-IT");
   const disp    = d.tipoDispositivo + " × " + d.numeroDispositivi;
   const saluto  = canale.saluto === "team" ? "Complimenti Team " + canale.canale : "Complimenti " + d.agente;
