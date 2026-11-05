@@ -447,13 +447,147 @@ function parseTimestamp(tsRaw) {
    TRIGGER — eseguire UNA SOLA VOLTA dalla tendina
    ============================================================ */
 function impostaTriggerDigest() {
+  const gestiti = ["inviaDigestSupervisione", "inviaDigestSettimanale", "inviaDigestMensile"];
   ScriptApp.getProjectTriggers().forEach(function(t) {
-    if (t.getHandlerFunction() === "inviaDigestSupervisione") ScriptApp.deleteTrigger(t);
+    if (gestiti.indexOf(t.getHandlerFunction()) >= 0) ScriptApp.deleteTrigger(t);
   });
+  // GIORNALIERO: 08 (giornata prec.) · 13 (mattina) · 20 (pomeriggio)
   [8, 13, 20].forEach(function(ora) {
     ScriptApp.newTrigger("inviaDigestSupervisione").timeBased().everyDays(1).atHour(ora).create();
   });
-  Logger.log("Trigger impostati: 13:00 (mattina), 20:00 (pomeriggio), 08:00 (giornata, giorno prima) — a desk + dir. comm.");
+  // SETTIMANALE: lunedì 08:00 (settimana precedente)
+  ScriptApp.newTrigger("inviaDigestSettimanale").timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(8).create();
+  // MENSILE: giorno 1, 08:00 (mese precedente)
+  ScriptApp.newTrigger("inviaDigestMensile").timeBased().onMonthDay(1).atHour(8).create();
+  Logger.log("Trigger digest impostati — giornaliero 08/13/20 · settimanale lun 08 · mensile giorno 1 08 — a desk + dir. comm.");
+}
+
+/* ============================================================
+   DIGEST SETTIMANALE / MENSILE — riusano _inviaDigest_
+   Destinatari = SUPERVISORI (desk + dir. comm.), come il giornaliero.
+   ============================================================ */
+function inviaDigestSettimanale() {
+  const now  = new Date();
+  const oggi0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // lun 00:00
+  const al   = new Date(oggi0.getTime() - 1);                               // dom 23:59:59
+  const dal  = new Date(oggi0.getTime() - 7 * 24 * 60 * 60 * 1000);         // lun prec 00:00
+  const f = function(d){ return Utilities.formatDate(d, "Europe/Rome", "dd/MM"); };
+  _inviaDigest_(dal, al, "Riepilogo settimanale",
+    'Settimana <strong style="color:#FFFFFF;">' + f(dal) + "&ndash;" + f(al) + "</strong>",
+    "Riepilogo settimanale " + f(dal) + "-" + f(al), 60);
+}
+function inviaDigestMensile() {
+  const now = new Date();
+  const primoMese = new Date(now.getFullYear(), now.getMonth(), 1); // 1° di questo mese
+  const al  = new Date(primoMese.getTime() - 1);                    // ultimo gg mese prec
+  const dal = new Date(al.getFullYear(), al.getMonth(), 1);         // 1° mese prec
+  const MESI = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
+  const label = MESI[dal.getMonth()] + " " + dal.getFullYear();
+  _inviaDigest_(dal, al, "Riepilogo mensile",
+    'Mese di <strong style="color:#FFFFFF;">' + label + "</strong>",
+    "Riepilogo mensile " + label, 100);
+}
+function testDigestSettimanale() { inviaDigestSettimanale(); }
+function testDigestMensile()    { inviaDigestMensile(); }
+
+/* Motore condiviso dei digest a intervallo [dal, al]. */
+function _inviaDigest_(dal, al, titolo, sottoHtml, oggettoBase, maxRighe) {
+  const dati = apriTab().getDataRange().getValues();
+  const head = (dati[0]||[]).map(function(h){ return String(h||"").trim().toLowerCase(); });
+  function colD(names, fb){ for (var i=0;i<names.length;i++){ var k=head.indexOf(names[i]); if (k>=0) return k; } return fb; }
+  const cTs=colD(["timestamp"],0), cRete=colD(["rete"],2), cCan=colD(["canale"],3),
+        cAg=colD(["agente","nome agente"],5), cMerc=colD(["ragione sociale","merchant"],6),
+        cDisp=colD(["dispositivo","tipo dispositivo"],9), cNd=colD(["n dispositivi","numero dispositivi"],10);
+  let cProv=14; for (var hp=0;hp<head.length;hp++){ if (head[hp].indexOf("provincia")>=0){ cProv=hp; break; } }
+
+  const deal = [];
+  for (let i=1;i<dati.length;i++){
+    const tsRaw = dati[i][cTs]; if (!tsRaw || String(tsRaw).trim()==="") continue;
+    const d = parseTimestamp(tsRaw); if (!d) continue;
+    if (d < dal || d > al) continue;
+    deal.push({
+      data: Utilities.formatDate(d, "Europe/Rome", "dd/MM"),
+      rete: String(dati[i][cRete]||""),
+      canale: String(dati[i][cCan]),
+      agente: String(dati[i][cAg]),
+      merchant: String(dati[i][cMerc]),
+      provincia: String(dati[i][cProv]),
+      disp: String(dati[i][cDisp]) + " × " + String(dati[i][cNd])
+    });
+  }
+  if (!deal.length) { Logger.log("Digest ["+titolo+"]: nessun deal nel periodo."); return; }
+
+  const perCanale = {}; let sd=0, atd=0;
+  deal.forEach(function(r){ perCanale[r.canale]=(perCanale[r.canale]||0)+1; if(r.rete==="SD")sd++; else if(r.rete==="ATD")atd++; });
+
+  const cap = maxRighe || deal.length;
+  const mostrate = deal.slice(0, cap);
+  const oggetto = oggettoBase + " — " + deal.length + " contratt" + (deal.length===1?"o":"i");
+
+  const righeHtml = mostrate.map(function(r, idx){ const bg = idx%2===0 ? "#151F1D" : "#0F1716";
+    return '<tr>'+
+      '<td bgcolor="'+bg+'" style="background-color:'+bg+';padding:9px 12px;color:#6E7773;font-size:11px;">'+r.data+'</td>'+
+      '<td bgcolor="'+bg+'" style="background-color:'+bg+';padding:9px 12px;color:#FF941A;font-size:11px;font-weight:600;">'+r.canale+'</td>'+
+      '<td bgcolor="'+bg+'" style="background-color:'+bg+';padding:9px 12px;color:#C8CFCB;font-size:11px;">'+r.agente+'</td>'+
+      '<td bgcolor="'+bg+'" style="background-color:'+bg+';padding:9px 12px;color:#FFFFFF;font-size:11px;font-weight:500;">'+r.merchant+'</td>'+
+      '<td bgcolor="'+bg+'" style="background-color:'+bg+';padding:9px 12px;color:#A8B0AC;font-size:11px;">'+r.provincia+'</td>'+
+      '<td bgcolor="'+bg+'" style="background-color:'+bg+';padding:9px 12px;color:#C8CFCB;font-size:11px;text-align:right;">'+r.disp+'</td>'+
+    '</tr>';
+  }).join("");
+  const extraHtml = deal.length>cap ? '<tr><td colspan="6" bgcolor="#0A0F0E" style="background-color:#0A0F0E;padding:9px 12px;color:#6E7773;font-size:11px;">+ '+(deal.length-cap)+' altri inserimenti &mdash; apri il Cruscotto per il dettaglio completo</td></tr>' : "";
+  const totaliHtml = Object.keys(perCanale).sort().map(function(c){
+    return '<tr><td style="padding:5px 12px;color:#A8B0AC;font-size:12px;">'+c+'</td><td style="padding:5px 12px;color:#FF941A;font-size:16px;font-weight:700;text-align:right;">'+perCanale[c]+'</td></tr>';
+  }).join("");
+
+  const html =
+  '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0F1716;padding:20px 0;"><tr><td align="center">' +
+  '<table role="presentation" width="620" cellpadding="0" cellspacing="0" bgcolor="#0F1716" style="max-width:620px;background-color:#0F1716;border-radius:14px;overflow:hidden;border:1px solid #2E3A38;font-family:Poppins,Arial,sans-serif;">' +
+    '<tr><td bgcolor="#1C2624" style="background-color:#1C2624;border-bottom:3px solid #FF941A;padding:20px 28px;">' +
+      '<table width="100%"><tr>' +
+        '<td style="color:#FF941A;font-weight:700;font-size:17px;">Sales Design</td>' +
+        '<td align="right" style="color:#B8BFBB;font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;">Supervisione rete</td>' +
+      '</tr></table></td></tr>' +
+    '<tr><td bgcolor="#0F1716" style="background-color:#0F1716;padding:22px 28px 16px;">' +
+      '<div style="color:#FFFFFF;font-size:20px;font-weight:700;">' + titolo + '</div>' +
+      '<div style="color:#C8CFCB;font-size:13px;margin-top:4px;">' + sottoHtml + '</div>' +
+      '<div style="margin-top:14px;"><a href="https://dealtrackerhub.netlify.app/" style="display:inline-block;background-color:#FF941A;color:#0F1716;font-weight:700;font-size:13px;text-decoration:none;padding:10px 20px;border-radius:8px;">Apri il Cruscotto Sales &rarr;</a></div>' +
+    '</td></tr>' +
+    '<tr><td bgcolor="#0F1716" style="background-color:#0F1716;padding:0 28px 20px;">' +
+      '<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#151F1D" style="background-color:#151F1D;border:1px solid #2E3A38;border-radius:12px;"><tr><td style="padding:16px 20px;">' +
+        '<table width="100%"><tr>' +
+          '<td valign="top"><div style="color:#6E7773;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">CONTRATTI PERIODO</div>' +
+              '<div style="color:#FF941A;font-size:36px;font-weight:800;line-height:1;">' + deal.length + '</div>' +
+              '<div style="color:#8A918D;font-size:12px;margin-top:6px;">SD <strong style="color:#FF941A;">'+sd+'</strong> &middot; ATD <strong style="color:#5AA8FF;">'+atd+'</strong></div></td>' +
+          '<td valign="top"><table style="border-collapse:collapse;">' + totaliHtml + '</table></td>' +
+        '</tr></table>' +
+      '</td></tr></table>' +
+    '</td></tr>' +
+    '<tr><td bgcolor="#0F1716" style="background-color:#0F1716;padding:0 28px 20px;">' +
+      '<div style="color:#FFFFFF;font-size:13px;font-weight:600;margin-bottom:10px;">Dettaglio inserimenti</div>' +
+      '<table width="100%" style="border-collapse:collapse;">' +
+        '<tr bgcolor="#0A0F0E">' +
+          '<th style="color:#6E7773;font-size:10px;font-weight:600;text-align:left;padding:7px 12px;letter-spacing:1px;">DATA</th>' +
+          '<th style="color:#6E7773;font-size:10px;font-weight:600;text-align:left;padding:7px 12px;letter-spacing:1px;">CANALE</th>' +
+          '<th style="color:#6E7773;font-size:10px;font-weight:600;text-align:left;padding:7px 12px;letter-spacing:1px;">AGENTE</th>' +
+          '<th style="color:#6E7773;font-size:10px;font-weight:600;text-align:left;padding:7px 12px;letter-spacing:1px;">MERCHANT</th>' +
+          '<th style="color:#6E7773;font-size:10px;font-weight:600;text-align:left;padding:7px 12px;letter-spacing:1px;">PROV.</th>' +
+          '<th style="color:#6E7773;font-size:10px;font-weight:600;text-align:right;padding:7px 12px;letter-spacing:1px;">DISPOS.</th>' +
+        '</tr>' + righeHtml + extraHtml +
+      '</table>' +
+    '</td></tr>' +
+    '<tr><td bgcolor="#0A0F0E" style="background-color:#0A0F0E;border-top:1px solid #2E3A38;padding:16px 28px;text-align:center;">' + btnSegnala_(titolo) +
+      '<div style="color:#8A918D;font-size:11px;line-height:1.7;"><strong style="color:#C8CFCB;">Sales Design S.r.l.</strong><br>Galleria Passarella 1, 20122 &mdash; Milano</div>' +
+    '</td></tr>' +
+  '</table></td></tr></table>';
+
+  const testo = oggetto + "\n\nSD: " + sd + " · ATD: " + atd + "\n\n" +
+    Object.keys(perCanale).map(function(c){ return c + ": " + perCanale[c]; }).join("\n") + "\n\n" +
+    mostrate.map(function(r){ return r.data + " · " + r.canale + " · " + r.agente + " · " + r.merchant + " (" + r.provincia + ")"; }).join("\n") +
+    (deal.length>cap ? ("\n+ " + (deal.length-cap) + " altri") : "");
+
+  const dest = MODO_TEST ? MAIL_TEST_DEST : SUPERVISORI.join(",");
+  inviaEmail_(dest, (MODO_TEST ? "[TEST] " : "") + oggetto, html, testo);
+  Logger.log("Digest ["+titolo+"] inviato: " + deal.length + " deal a " + dest);
 }
 
 /* ============================================================
