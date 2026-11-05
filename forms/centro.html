@@ -356,7 +356,7 @@ document.getElementById('dealForm').addEventListener('submit', async function(e)
   const payload = {
     codice:            CODICE_CANALE,
     data:              document.getElementById('data').value,
-    agente:            document.getElementById('agente').value.trim(),
+    agente:            document.getElementById('agente_nome').value.trim(),
     ragioneSociale:    document.getElementById('ragioneSociale').value.trim(),
     partitaIva:        piva,
     provincia:         document.getElementById('provincia').value,
