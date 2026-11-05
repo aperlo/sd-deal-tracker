@@ -432,6 +432,29 @@ details.fold>div{padding:2px 0 16px}
 #view-recruiting .pfold .pf-v{font-weight:800;font-variant-numeric:tabular-nums;color:var(--violet);font-size:15px;min-width:20px;text-align:right}
 #view-recruiting .pfold-body{padding:12px 14px 14px 16px;display:flex;flex-direction:column;gap:11px;border-top:1px solid var(--line)}
 
+/* ═══ COCKPIT (lettura istantanea in cima) ═══ */
+.cockpit{margin-bottom:18px}
+.ck-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:760px){.ck-grid{grid-template-columns:1fr}}
+.ck-tile{background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 42%),var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px 18px 15px;display:flex;flex-direction:column;gap:9px}
+.ck-eye{font-size:10.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
+.ck-big{font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.ck-big small{font-size:18px;font-weight:600;color:var(--muted);letter-spacing:-.01em}
+.ck-foot{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ck-mini{height:6px;border-radius:999px;background:var(--surface3);overflow:hidden}
+.ck-mini i{display:block;height:100%;border-radius:999px;background:var(--brand)}
+.ck-pace{margin-top:14px;background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 42%),var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 20px 18px}
+.ck-pace-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.ck-track{position:relative;height:40px;border-radius:9px;background:var(--surface3);overflow:visible}
+.ck-fill{position:absolute;left:0;top:0;bottom:0;border-radius:9px 0 0 9px;opacity:.9;transition:width .4s}
+.ck-mark{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--text);border-radius:2px}
+.ck-mark::after{content:attr(data-l);position:absolute;top:-18px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10.5px;font-weight:700;color:var(--text)}
+.ck-end{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:var(--muted)}
+.ck-verdict{font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:999px}
+.ck-verdict.up{color:var(--pos);background:var(--mint-s)}
+.ck-verdict.down{color:var(--neg);background:rgba(255,107,107,.14)}
+.ck-verdict.flat{color:var(--faint);background:rgba(255,255,255,.05)}
+
 /* ═══ BUDGET & TARGET band ═══ */
 #budgetBand{grid-template-columns:repeat(4,auto) 1fr;gap:20px}
 @media(max-width:860px){#budgetBand{grid-template-columns:1fr 1fr}#budgetBand .alerts{grid-column:span 2;justify-content:flex-start}}
@@ -595,6 +618,9 @@ details.fold>div{padding:2px 0 16px}
 
 <!-- ══ VIEW: SALES TRACKING ══ -->
 <main class="view on" id="view-sales" role="tabpanel" aria-labelledby="tab-sales">
+
+  <!-- COCKPIT: lettura istantanea (come va · dove siamo · dove dovremmo essere) -->
+  <div class="cockpit" id="cockpit"></div>
 
   <div class="toolbar">
     <div class="fl"><label>Tipo</label><select id="fTipo"><option value="all">Tutti</option><option value="Direct">Direct Sales</option><option value="Agenzia">Agenzie</option><option value="Area">Aree</option></select></div>
@@ -1018,7 +1044,7 @@ const Sales=(function(){
   function apply(){const rete=$("fRete").value,tipo=$("fTipo").value,canale=$("fCanale").value;
     FILTERED=APP.records.filter(r=>{const d=pd(r.data);if(!inHZ(d))return false;if(rete!=="all"&&r.rete!==rete)return false;if(tipo!=="all"&&r.tipo!==tipo)return false;if(canale!=="all"&&r.canale!==canale)return false;return true;});
     $("sCount").textContent=FILTERED.length+" di "+APP.records.length+" contratti · "+hzLabel();
-    renderExec();targetBudget();kpi(rete,tipo,canale);netSplit();periodoChart();tipoChart();canaleRank();mensile();projection();agentiTable();provTable();}
+    cockpit();renderExec();targetBudget();kpi(rete,tipo,canale);netSplit();periodoChart();tipoChart();canaleRank();mensile();projection();agentiTable();provTable();}
 
   function renderExec(){
     const sd=FILTERED.filter(r=>r.rete==="SD").length,atd=FILTERED.filter(r=>r.rete==="ATD").length,tot=sd+atd;
@@ -1037,6 +1063,42 @@ const Sales=(function(){
       `<div class="eblk"><div class="el">Contratti · ${hzLabel()}</div><div class="ebig" style="color:var(--brand)">${tot}</div><div class="el">${dchip} vs prec.</div></div>`+
       `<div class="eblk"><div class="el">SD vs ATD</div><div class="esplit"><span style="color:var(--brand);font-weight:800;font-size:22px">${sd}</span><span style="color:var(--violet);font-weight:800;font-size:22px">${atd}</span></div><div class="el">${merch} merchant onboardati</div></div>`+
       `<div class="alerts">${al.join("")||'<span class="al ok">Tutto in linea</span>'}</div>`;
+  }
+  /* ── COCKPIT: come va · dove siamo · dove dovremmo essere (mese corrente) ── */
+  function cockpit(){
+    const rete=$("fRete").value,tipo=$("fTipo").value,canale=$("fCanale").value;
+    const match=r=>(rete==="all"||r.rete===rete)&&(tipo==="all"||r.tipo===tipo)&&(canale==="all"||r.canale===canale);
+    const recs=APP.records.filter(match);
+    const now=new Date(),refY=now.getFullYear(),refM=now.getMonth();   // sempre il mese corrente
+    const inM=(d,Y,M)=>d&&d.getFullYear()===Y&&d.getMonth()===M;
+    const months={};recs.forEach(r=>{const d=pd(r.data);if(d)months[d.getFullYear()+"-"+d.getMonth()]=1;});
+    const mediaMese=recs.length/(Object.keys(months).length||1);
+    const attuale=recs.filter(r=>inM(pd(r.data),refY,refM)).length;
+    const pm=new Date(refY,refM-1,1);
+    const prec=recs.filter(r=>inM(pd(r.data),pm.getFullYear(),pm.getMonth())).length;
+    const dpct=prec?Math.round((attuale-prec)/prec*100):null;
+    const giorniMese=new Date(refY,refM+1,0).getDate();
+    const giorniTrasc=Math.min(now.getDate(),giorniMese);
+    const frac=giorniTrasc/giorniMese;
+    const atteso=mediaMese*frac, gap=Math.round(attuale-atteso);
+    const pctMedia=mediaMese>0?Math.round(attuale/mediaMese*100):0;
+    const f=n=>Math.round(Number(n)||0).toLocaleString("it-IT");
+    const p1=dpct==null?'<span class="delta flat">n.d.</span>':dpct>0?`<span class="delta up">▲ ${dpct}%</span>`:dpct<0?`<span class="delta down">▼ ${Math.abs(dpct)}%</span>`:'<span class="delta flat">0%</span>';
+    const p3=Math.abs(gap)<1?'<span class="delta flat">in linea</span>':gap>0?`<span class="delta up">+${gap} avanti</span>`:`<span class="delta down">${gap} indietro</span>`;
+    const ahead=attuale>=atteso;
+    const fillPct=Math.min(100,mediaMese>0?attuale/mediaMese*100:0),markPct=Math.min(100,frac*100);
+    const vC=Math.abs(gap)<1?'flat':gap>0?'up':'down';
+    const vT=Math.abs(gap)<1?'In linea col ritmo':gap>0?`Avanti di ${gap} sul ritmo`:`Indietro di ${Math.abs(gap)} sul ritmo`;
+    const el=$("cockpit");if(!el)return;
+    el.innerHTML=
+      '<div class="ck-grid">'+
+        '<div class="ck-tile"><div class="ck-eye">Come va</div><div class="ck-big tnum">'+f(attuale)+'</div><div class="ck-foot">'+p1+'<span>vs '+MESI[pm.getMonth()]+' ('+prec+')</span></div></div>'+
+        '<div class="ck-tile"><div class="ck-eye">Dove siamo</div><div class="ck-big tnum">'+f(attuale)+' <small>/ '+mediaMese.toFixed(1)+' media</small></div><div class="ck-mini"><i style="width:'+Math.min(100,pctMedia)+'%"></i></div><div class="ck-foot">'+pctMedia+'% della media azienda · '+giorniTrasc+'/'+giorniMese+' gg</div></div>'+
+        '<div class="ck-tile"><div class="ck-eye">Dove dovremmo essere</div><div class="ck-big tnum">'+f(atteso)+' <small>a oggi</small></div><div class="ck-foot">'+p3+'<span>target mese '+f(mediaMese)+'</span></div></div>'+
+      '</div>'+
+      '<div class="ck-pace"><div class="ck-pace-h"><div class="section-t" style="font-size:14px">Ritmo di '+MESI[refM]+' '+refY+'</div><div class="ck-verdict '+vC+'">'+vT+'</div></div>'+
+        '<div class="ck-track"><div class="ck-fill" style="width:'+fillPct+'%;background:'+(ahead?'var(--pos)':'var(--brand)')+'"></div><div class="ck-mark" data-l="atteso '+f(atteso)+'" style="left:'+markPct+'%"></div><div class="ck-end">target '+f(mediaMese)+'</div></div>'+
+      '</div>';
   }
   /* ── BUDGET & TARGET mese prossimo (media azienda + recupero) ── */
   function targetBudget(){
