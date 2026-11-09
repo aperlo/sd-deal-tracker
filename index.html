@@ -1064,40 +1064,64 @@ const Sales=(function(){
       `<div class="eblk"><div class="el">SD vs ATD</div><div class="esplit"><span style="color:var(--brand);font-weight:800;font-size:22px">${sd}</span><span style="color:var(--violet);font-weight:800;font-size:22px">${atd}</span></div><div class="el">${merch} merchant onboardati</div></div>`+
       `<div class="alerts">${al.join("")||'<span class="al ok">Tutto in linea</span>'}</div>`;
   }
-  /* ── COCKPIT: come va · dove siamo · dove dovremmo essere (mese corrente) ── */
+  /* ── COCKPIT: fatto · proiezione · obiettivo (mese corrente) — visual positiva ── */
   function cockpit(){
     const rete=$("fRete").value,tipo=$("fTipo").value,canale=$("fCanale").value;
     const match=r=>(rete==="all"||r.rete===rete)&&(tipo==="all"||r.tipo===tipo)&&(canale==="all"||r.canale===canale);
     const recs=APP.records.filter(match);
-    const now=new Date(),refY=now.getFullYear(),refM=now.getMonth();   // sempre il mese corrente
-    const inM=(d,Y,M)=>d&&d.getFullYear()===Y&&d.getMonth()===M;
-    const months={};recs.forEach(r=>{const d=pd(r.data);if(d)months[d.getFullYear()+"-"+d.getMonth()]=1;});
-    const mediaMese=recs.length/(Object.keys(months).length||1);
-    const attuale=recs.filter(r=>inM(pd(r.data),refY,refM)).length;
+    const now=new Date(),refY=now.getFullYear(),refM=now.getMonth();   // mese corrente
     const pm=new Date(refY,refM-1,1);
-    const prec=recs.filter(r=>inM(pd(r.data),pm.getFullYear(),pm.getMonth())).length;
-    const dpct=prec?Math.round((attuale-prec)/prec*100):null;
+    const inM=(d,Y,M)=>d&&d.getFullYear()===Y&&d.getMonth()===M;
+    const months={}; recs.forEach(r=>{const d=pd(r.data); if(d)months[d.getFullYear()+"-"+d.getMonth()]=1;});
+    const mesiAttivi=Object.keys(months).length||1;
+
+    // ═══ OBIETTIVO — performance media mensile ÷ n° agenti × totale agenti·agenzie in rete + 10% ═══
+    // (per cambiare base, si tocca SOLO questo blocco)
+    const prodSet=new Set(); recs.forEach(r=>{const nn=normName(r.agente); if(nn)prodSet.add(nn);});
+    const nProduttori=prodSet.size||1;
+    const mediaMese=recs.length/mesiAttivi;                 // performance media mensile (rete filtrata)
+    const perfPerAgente=mediaMese/nProduttori;              // ÷ n° agenti che producono
+    let rosterTot=0;                                        // × totale agenti/agenzie in rete (roster recruiting)
+    (APP.agenti||[]).forEach(a=>{ if(rete!=="all" && a.rete && a.rete!==rete) return;
+      const ru=String(a.ruolo||"").toUpperCase(); if(ru==="SALES"||ru==="AGENZIA"||ru==="AM") rosterTot++; });
+    if(!rosterTot) rosterTot=nProduttori;                   // fallback se roster non caricato
+    const obiettivo=Math.max(1, Math.round(perfPerAgente*rosterTot*1.10));  // +10% di crescita
+    const agentiAttivi=rosterTot;
+    // ════════════════════════════════════════════════════════════════════════════════
+
+    const attuale=recs.filter(r=>inM(pd(r.data),refY,refM)).length;
     const giorniMese=new Date(refY,refM+1,0).getDate();
     const giorniTrasc=Math.min(now.getDate(),giorniMese);
-    const frac=giorniTrasc/giorniMese;
-    const atteso=mediaMese*frac, gap=Math.round(attuale-atteso);
-    const pctMedia=mediaMese>0?Math.round(attuale/mediaMese*100):0;
+    // momentum EQUO: stessi giorni (1..oggi) del mese scorso
+    const precToDate=recs.filter(r=>{const d=pd(r.data); return d&&inM(d,pm.getFullYear(),pm.getMonth())&&d.getDate()<=giorniTrasc;}).length;
+    const dpct=precToDate?Math.round((attuale-precToDate)/precToDate*100):null;
+    const proiezione=giorniTrasc>0?Math.round(attuale/giorniTrasc*giorniMese):attuale;
+    const pct=obiettivo>0?Math.round(attuale/obiettivo*100):0;
+    const manca=Math.max(0, obiettivo-attuale);
     const f=n=>Math.round(Number(n)||0).toLocaleString("it-IT");
-    const p1=dpct==null?'<span class="delta flat">n.d.</span>':dpct>0?`<span class="delta up">▲ ${dpct}%</span>`:dpct<0?`<span class="delta down">▼ ${Math.abs(dpct)}%</span>`:'<span class="delta flat">0%</span>';
-    const p3=Math.abs(gap)<1?'<span class="delta flat">in linea</span>':gap>0?`<span class="delta up">+${gap} avanti</span>`:`<span class="delta down">${gap} indietro</span>`;
-    const ahead=attuale>=atteso;
-    const fillPct=Math.min(100,mediaMese>0?attuale/mediaMese*100:0),markPct=Math.min(100,frac*100);
-    const vC=Math.abs(gap)<1?'flat':gap>0?'up':'down';
-    const vT=Math.abs(gap)<1?'In linea col ritmo':gap>0?`Avanti di ${gap} sul ritmo`:`Indietro di ${Math.abs(gap)} sul ritmo`;
-    const el=$("cockpit");if(!el)return;
+
+    // pill momentum: verde se cresce, neutro se cala (mai rosso)
+    const p1 = dpct==null ? '<span class="delta flat">avvio</span>'
+             : dpct>=0 ? '<span class="delta up">▲ '+dpct+'%</span>'
+             : '<span class="delta flat">▼ '+Math.abs(dpct)+'%</span>';
+    // verdetto POSITIVO
+    const inCorsa = proiezione>=obiettivo;
+    const vC = inCorsa ? 'up' : 'flat';
+    const vT = pct>=100 ? '🎯 Obiettivo raggiunto'
+             : inCorsa ? '🎯 In corsa per il traguardo'
+             : 'Spingiamo: mancano '+manca+' al traguardo';
+    const fillPct=Math.min(100, obiettivo>0?attuale/obiettivo*100:0);
+    const projPct=Math.min(100, obiettivo>0?proiezione/obiettivo*100:0);
+
+    const el=$("cockpit"); if(!el) return;
     el.innerHTML=
       '<div class="ck-grid">'+
-        '<div class="ck-tile"><div class="ck-eye">Come va</div><div class="ck-big tnum">'+f(attuale)+'</div><div class="ck-foot">'+p1+'<span>vs '+MESI[pm.getMonth()]+' ('+prec+')</span></div></div>'+
-        '<div class="ck-tile"><div class="ck-eye">Dove siamo</div><div class="ck-big tnum">'+f(attuale)+' <small>/ '+mediaMese.toFixed(1)+' media</small></div><div class="ck-mini"><i style="width:'+Math.min(100,pctMedia)+'%"></i></div><div class="ck-foot">'+pctMedia+'% della media azienda · '+giorniTrasc+'/'+giorniMese+' gg</div></div>'+
-        '<div class="ck-tile"><div class="ck-eye">Dove dovremmo essere</div><div class="ck-big tnum">'+f(atteso)+' <small>a oggi</small></div><div class="ck-foot">'+p3+'<span>target mese '+f(mediaMese)+'</span></div></div>'+
+        '<div class="ck-tile"><div class="ck-eye">Fatto a oggi</div><div class="ck-big tnum">'+f(attuale)+'</div><div class="ck-foot">'+p1+'<span>vs 1–'+giorniTrasc+' '+MESI[pm.getMonth()]+' ('+precToDate+')</span></div></div>'+
+        '<div class="ck-tile"><div class="ck-eye">Proiezione fine mese</div><div class="ck-big tnum">'+f(proiezione)+'</div><div class="ck-foot"><span>al ritmo di oggi · '+giorniTrasc+'/'+giorniMese+' gg</span></div></div>'+
+        '<div class="ck-tile"><div class="ck-eye">Obiettivo '+MESI[refM]+'</div><div class="ck-big tnum">'+f(obiettivo)+'</div><div class="ck-mini"><i style="width:'+Math.min(100,pct)+'%"></i></div><div class="ck-foot"><b style="color:var(--text)">'+pct+'% fatto</b>'+(manca>0?' · mancano '+manca:' · completato')+'</div><div class="ck-foot" style="color:var(--faint);font-size:11px">media/agente × '+rosterTot+' in rete + 10%</div></div>'+
       '</div>'+
-      '<div class="ck-pace"><div class="ck-pace-h"><div class="section-t" style="font-size:14px">Ritmo di '+MESI[refM]+' '+refY+'</div><div class="ck-verdict '+vC+'">'+vT+'</div></div>'+
-        '<div class="ck-track"><div class="ck-fill" style="width:'+fillPct+'%;background:'+(ahead?'var(--pos)':'var(--brand)')+'"></div><div class="ck-mark" data-l="atteso '+f(atteso)+'" style="left:'+markPct+'%"></div><div class="ck-end">target '+f(mediaMese)+'</div></div>'+
+      '<div class="ck-pace"><div class="ck-pace-h"><div class="section-t" style="font-size:14px">Verso l\'obiettivo di '+MESI[refM]+' '+refY+'</div><div class="ck-verdict '+vC+'">'+vT+'</div></div>'+
+        '<div class="ck-track"><div class="ck-fill" style="width:'+fillPct+'%;background:var(--brand)"></div><div class="ck-mark" data-l="proiez. '+f(proiezione)+'" style="left:'+projPct+'%;background:'+(inCorsa?'var(--pos)':'var(--muted)')+'"></div><div class="ck-end">obiettivo '+f(obiettivo)+'</div></div>'+
       '</div>';
   }
   /* ── BUDGET & TARGET mese prossimo (media azienda + recupero) ── */
