@@ -996,7 +996,12 @@ document.getElementById("btnRefresh").addEventListener("click",refreshAll);
   Object.keys(map).forEach(tid=>document.getElementById(tid).addEventListener("click",()=>{
     Object.keys(map).forEach(t=>{const sel=t===tid;document.getElementById(t).setAttribute("aria-selected",sel);document.getElementById(map[t]).classList.toggle("on",sel);});
     if(tid==="tab-rec")Recruiting.onShow(); window.scrollTo({top:0});
-  }));})();
+  }));
+  // deep-link: /recruiting (o #recruiting) apre direttamente la tab Recruiting
+  if(/recruiting/i.test(location.pathname+location.hash)){
+    window.addEventListener("load",function(){ try{ document.getElementById("tab-rec").click(); }catch(e){} });
+  }
+})();
 
 /* ═══════════════ SALES ═══════════════ */
 const Sales=(function(){
