@@ -134,26 +134,49 @@ function elabora(d, modalitaTest) {
   const ts     = Utilities.formatDate(adesso, "Europe/Rome", "dd/MM/yyyy HH:mm:ss");
 
   const rete = canale.tipo === "Area" ? "ATD" : "SD";   // ATD = Aree · SD = Direct + Agenzie
-  scriviRigaPerHeader_({
-    "Timestamp":         ts,
-    "Data":              dataIt,
-    "Rete":              rete,
-    "Canale":            canale.canale,
-    "Tipo":              canale.tipo,
-    "Agente":            String(d.agente),
-    "Ragione Sociale":   String(d.ragioneSociale),
-    "Partita IVA":       "'" + String(d.partitaIva),
-    "Fatturato mese":    Number(d.fatturatoMese),
-    "Dispositivo":       String(d.tipoDispositivo),
-    "N dispositivi":     Number(d.numeroDispositivi),
-    "Pricing":           String(d.pricing),
-    "Tariffa Pay":       String(d.tariffaPay),
-    "Tariffa Domestic":  String(d.tariffaDomestic),
-    "Provincia":         String(d.provincia),
-    "Note":              String(d.note || ""),
-    "Email agente":      String(d.emailAgente || ""),
-    "Area Manager":      areaManagerDi_(canale)
-  });
+
+  // ---- SCRITTURA MASTER (con rete di sicurezza) ----
+  // Se la scrittura fallisce NON inviamo la conferma (eviteremmo un "ok" falso):
+  // avvisiamo subito la supervisione con i dati del deal così si reinserisce a mano.
+  try {
+    scriviRigaPerHeader_({
+      "Timestamp":         ts,
+      "Data":              dataIt,
+      "Rete":              rete,
+      "Canale":            canale.canale,
+      "Tipo":              canale.tipo,
+      "Agente":            String(d.agente),
+      "Ragione Sociale":   String(d.ragioneSociale),
+      "Partita IVA":       "'" + String(d.partitaIva),
+      "Fatturato mese":    Number(d.fatturatoMese),
+      "Dispositivo":       String(d.tipoDispositivo),
+      "N dispositivi":     Number(d.numeroDispositivi),
+      "Pricing":           String(d.pricing),
+      "Tariffa Pay":       String(d.tariffaPay),
+      "Tariffa Domestic":  String(d.tariffaDomestic),
+      "Provincia":         String(d.provincia),
+      "Note":              String(d.note || ""),
+      "Email agente":      String(d.emailAgente || ""),
+      "Area Manager":      areaManagerDi_(canale)
+    });
+  } catch (errScrittura) {
+    try {
+      const dett = [dataIt, canale.canale, "Agente: " + String(d.agente || ""),
+        String(d.ragioneSociale || ""), "P.IVA " + String(d.partitaIva || ""),
+        "€ " + String(d.fatturatoMese || ""), "Prov. " + String(d.provincia || "")].join(" · ");
+      const destErr = MODO_TEST ? MAIL_TEST_DEST : SUPERVISORI.join(",");
+      inviaEmail_(destErr,
+        "⚠️ DEAL NON SALVATO nel Master — " + canale.canale + " / " + String(d.ragioneSociale || ""),
+        "<div style=\"font-family:Arial,sans-serif;font-size:14px;color:#111\">" +
+        "<p><strong>Attenzione:</strong> la scrittura nel foglio Master è fallita per un deal appena ricevuto. " +
+        "Il contratto <strong>NON è stato tracciato</strong>: va reinserito a mano.</p>" +
+        "<p style=\"background:#f6f6f6;padding:10px;border-radius:6px\">" + dett + "</p>" +
+        "<p style=\"color:#888;font-size:12px\">Dettaglio tecnico: " + String(errScrittura) + "</p></div>",
+        "DEAL NON SALVATO nel Master: " + dett + " | Errore: " + String(errScrittura));
+    } catch (e2) {}
+    Logger.log("ERRORE SCRITTURA MASTER: " + errScrittura);
+    return rispondi({ ok: false, errore: "Scrittura non riuscita" });
+  }
 
   // ---- ROUTING MAIL ----
   const emailComp = String(d.emailAgente || "").trim();
