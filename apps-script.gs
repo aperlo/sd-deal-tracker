@@ -55,6 +55,7 @@ const CODICI = {
   "SD-AG-PUNTOSEMPLICE":    { canale: "Punto Semplice",  tipo: "Agenzia", gruppo: "agenzia", saluto: "team", mail: "puntosemplice@sales-design.it" },
   "SD-AG-GRANDASOLUTIONS":  { canale: "Granda Solutions",tipo: "Agenzia", gruppo: "agenzia", saluto: "team", mail: "r.dalsasso02@sales-design.it" },
   "SD-AG-TEAMTUTINO":       { canale: "Team Tutino",     tipo: "Agenzia", gruppo: "agenzia", saluto: "team", mail: "s.tutino10@sales-design.it" },
+  "SD-AG-DEVELOP":          { canale: "Develop",         tipo: "Agenzia", gruppo: "agenzia", saluto: "team", mail: "develop@sales-design.it" },
   "SD_NORD":                { canale: "Area Nord",       tipo: "Area",    gruppo: "area",    saluto: "team", mail: "m.mantovelli06@sales-design.it" },
   "SD_CENTRO":              { canale: "Area Centro",     tipo: "Area",    gruppo: "area",    saluto: "team", mail: "marco.cima02@attitudeltd.com" },
   "SD_SUD":                 { canale: "Area Sud",        tipo: "Area",    gruppo: "area",    saluto: "team", mail: "c.massafra21@sales-design.it" },

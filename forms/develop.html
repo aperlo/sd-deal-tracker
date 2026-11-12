@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Deal Tracker — Develop</title>
+<style>
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0A0F0E;
+    min-height: 100vh;
+    color: #E2E8E4;
+  }
+
+  /* ── HERO BAND nero→arancio ── */
+  .hero-band { text-align:center;
+    background: linear-gradient(135deg, #0A0F0E 0%, #1A1208 40%, #FF941A 100%);
+    padding: 28px 24px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-band::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(255,148,26,0.25) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-brand {
+    color: #FF941A;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    opacity: .9;
+  }
+  .hero-title {
+    color: #FFFFFF;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .hero-subtitle {
+    color: rgba(255,255,255,0.65);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .channel-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,148,26,0.18);
+    border: 1px solid rgba(255,148,26,0.4);
+    color: #FF941A;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 99px;
+    margin-top: 12px;
+  }
+  .channel-badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #FF941A;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* ── RECIPIENT LEGEND ── */
+  .recipient-legend {
+    display: flex;
+    gap: 8px;
+    padding: 10px 24px;
+    background: #111816;
+    border-bottom: 1px solid #1E2B28;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #6E7773;
+  }
+  .legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .ld-compilatore { background:#60A5FA; }
+  .ld-desk        { background:#6366F1; }
+  .ld-dircomm     { background:#FF941A; }
+  .ld-agente      { background:#2EC4A0; }
+
+  /* ── FORM ── */
+  .hero-band>div{max-width:560px;margin-left:auto;margin-right:auto} .form-wrap { max-width:560px; margin:0 auto; padding:24px 20px 48px; }
+
+  .section-hdr {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #FF941A;
+    margin: 24px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-hdr::after { content:''; flex:1; height:1px; background:#1E2B28; }
+
+  .field { margin-bottom: 16px; }
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: #8A918D;
+    margin-bottom: 6px;
+  }
+  label .req { color:#FF941A; margin-left:2px; }
+
+  input, select, textarea {
+    width: 100%;
+    background: #111816;
+    border: 1px solid #263530;
+    border-radius: 10px;
+    color: #E2E8E4;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: #FF941A;
+    box-shadow: 0 0 0 3px rgba(255,148,26,.12);
+  }
+  input[readonly] { color:#6E7773; cursor:default; background:#0D1210; }
+  textarea { resize:vertical; min-height:80px; }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236E7773' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+  select option { background:#111816; }
+
+  .row-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  .btn-submit {
+    width: 100%;
+    background: linear-gradient(135deg, #FF941A 0%, #E07A00 100%);
+    color: #FFFFFF;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-top: 28px;
+    transition: opacity .2s, transform .1s;
+  }
+  .btn-submit:hover  { opacity:.92; }
+  .btn-submit:active { transform:scale(.985); }
+  .btn-submit:disabled { opacity:.45; cursor:not-allowed; }
+
+  .toast {
+    display: none;
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    background: #1A2E28;
+    border: 1px solid #2EC4A0;
+    border-radius: 12px;
+    padding: 14px 22px;
+    color: #3FD9B3;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 999;
+    text-align: center;
+    max-width: 90vw;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  }
+  .toast.error { border-color:#EF4444; color:#FCA5A5; background:#2A1A1A; }
+  .toast.show  { display:block; animation:fadeUp .3s ease; }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateX(-50%) translateY(10px); }
+    to   { opacity:1; transform:translateX(-50%) translateY(0); }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="hero-band">
+  <div class="hero-brand">Sales Design · Deal Tracker</div>
+  <div class="hero-title">Daily Sales Tracker</div>
+  <div class="hero-subtitle">Registrazione merchant · Nuovo sistema</div>
+  <div class="channel-badge"><span class="dot"></span>Develop</div>
+</div>
+
+<div class="form-wrap">
+  <form id="dealForm">
+
+    <div class="section-hdr">Dati agente</div>
+
+    <div class="field">
+      <label>Codice canale</label>
+      <input type="text" id="codice" value="SD-AG-DEVELOP" readonly tabindex="-1">
+    </div>
+
+    <div class="field">
+      <label>Canale</label>
+      <input type="text" id="agente" value="Develop" readonly tabindex="-1">
+    </div>
+    <div class="field">
+      <label>Nome agente <span class="req">*</span></label>
+      <input type="text" id="agente_nome" value="Develop" readonly tabindex="-1">
+    </div>
+    <div class="field">
+      <label>Email agente <span class="req">*</span></label>
+      <input type="email" id="emailAgente" value="develop@sales-design.it" readonly tabindex="-1">
+    </div>
+    <div class="field">
+      <label>Data deal <span class="req">*</span></label>
+      <input type="date" id="data" required>
+    </div>
+
+    <div class="section-hdr">Dati merchant</div>
+
+    <div class="field">
+      <label>Ragione sociale <span class="req">*</span></label>
+      <input type="text" id="ragioneSociale" placeholder="Nome azienda" required>
+    </div>
+    <div class="field">
+      <label>Partita IVA <span class="req">*</span></label>
+      <input type="text" id="partitaIva" placeholder="11 cifre" maxlength="11" inputmode="numeric" required>
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label>Regione <span class="req">*</span></label>
+        <select id="regione" required>
+          <option value="">seleziona la regione</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Provincia <span class="req">*</span></label>
+        <select id="provincia" required disabled>
+          <option value="">scegli prima la regione</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Fatturato mensile stimato (€) <span class="req">*</span></label>
+      <input type="number" id="fatturatoMese" placeholder="es. 25000" min="0" required>
+    </div>
+
+    <div class="section-hdr">Dispositivo &amp; pricing</div>
+
+    <div class="row-2">
+      <div class="field">
+        <label>Tipo dispositivo <span class="req">*</span></label>
+        <select id="tipoDispositivo" required>
+          <option value="">— seleziona —</option>
+          <option value="Standard">Standard</option>
+          <option value="Lite">Lite</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>N° dispositivi <span class="req">*</span></label>
+        <input type="number" id="numeroDispositivi" placeholder="1" min="1" required>
+      </div>
+    </div>
+    <div class="field">
+      <label>Pricing (€/mese) <span class="req">*</span></label>
+      <input type="text" id="pricing" readonly placeholder="automatico dal dispositivo">
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label>Tariffa RevPay <span class="req">*</span></label>
+        <input type="text" id="tariffaPay" readonly placeholder="automatico">
+      </div>
+      <div class="field">
+        <label>Tariffa Domestic <span class="req">*</span></label>
+        <select id="tariffaDomestic" required>
+          <option value="">— seleziona —</option>
+          <option value="0,80%">0,80%</option>
+          <option value="0,70%">0,70%</option>
+          <option value="0,60%">0,60%</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-hdr">Note</div>
+
+    <div class="field">
+      <label>Note libere</label>
+      <textarea id="note" placeholder="Nome agente e sua email (subagente), + info aggiuntive"></textarea>
+    </div>
+
+    <button type="submit" class="btn-submit" id="submitBtn">Registra deal →</button>
+  </form>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+const ENDPOINT      = "https://script.google.com/macros/s/AKfycbwbPutRJgG1m05OH_dTNbbhcRsrhXzZf66wOoLgNEyesLpC1x_pj7Mdlar2HJ5wnNpEWg/exec";
+const CODICE_CANALE = "SD-AG-DEVELOP";
+
+document.addEventListener('DOMContentLoaded', function() {
+  const oggi = new Date();
+  const yyyy = oggi.getFullYear();
+  const mm   = String(oggi.getMonth() + 1).padStart(2, '0');
+  const dd   = String(oggi.getDate()).padStart(2, '0');
+  document.getElementById('data').value = yyyy + '-' + mm + '-' + dd;
+});
+
+function toast(msg, tipo) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (tipo === 'error' ? ' error' : '');
+  setTimeout(() => { t.className = 'toast'; }, 5000);
+}
+
+document.getElementById('dealForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  var _em=document.getElementById('emailAgente').value.trim(); if(!/.+@.+\..+/.test(_em)){toast('Email agente obbligatoria: inseriscila per ricevere la conferma','error');return;} const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Invio in corso…';
+
+  const piva = document.getElementById('partitaIva').value.trim();
+  if (!/^\d{11}$/.test(piva)) {
+    toast('Partita IVA non valida: inserire esattamente 11 cifre', 'error');
+    btn.disabled = false; btn.textContent = 'Registra deal →';
+    return;
+  }
+
+  const payload = {
+    codice:            CODICE_CANALE,
+    data:              document.getElementById('data').value,
+    agente:            document.getElementById('agente_nome').value.trim(),
+    ragioneSociale:    document.getElementById('ragioneSociale').value.trim(),
+    partitaIva:        piva,
+    provincia:         document.getElementById('provincia').value,
+    fatturatoMese:     document.getElementById('fatturatoMese').value,
+    tipoDispositivo:   document.getElementById('tipoDispositivo').value,
+    numeroDispositivi: document.getElementById('numeroDispositivi').value,
+    pricing:           document.getElementById('pricing').value,
+    tariffaPay:        document.getElementById('tariffaPay').value,
+    tariffaDomestic:   document.getElementById('tariffaDomestic').value,
+    note:              document.getElementById('note').value.trim(),
+    emailAgente:       document.getElementById('emailAgente').value.trim()
+  };
+
+  try {
+    await fetch(ENDPOINT, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+        this.style.display='none';
+    var ok=document.createElement('div');
+    ok.style.cssText='text-align:center;padding:48px 20px;';
+    ok.innerHTML='<div style="font-size:56px;line-height:1;color:#3FD9B3;margin-bottom:14px">&#10003;</div>'+'<h2 style="color:#fff;font-size:22px;margin:0 0 8px">Deal registrato!</h2>'+'<p style="color:#C8CFCB;font-size:14px;line-height:1.6;margin:0 0 24px">Il contratto &egrave; stato inviato e tracciato correttamente.</p>'+'<button type="button" class="btn-submit" style="max-width:320px;margin:0 auto" onclick="location.reload()">Registra un altro deal</button>';
+    this.parentNode.appendChild(ok);
+    window.scrollTo({top:0,behavior:'smooth'});
+  } catch(err) {
+    toast('Errore di rete. Riprova.', 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Registra deal →';
+});
+
+</script>
+<script>/*sd-upper*/
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('input,textarea').forEach(function(el){
+    var t=(el.getAttribute('type')||'text').toLowerCase();
+    if(t==='email'||t==='number'||t==='password'||t==='checkbox'||t==='radio'||t==='tel'||/mail/i.test(el.id||'')||/mail/i.test(el.name||''))return;
+    el.style.textTransform='uppercase';
+    el.addEventListener('input',function(){var s=el.selectionStart,e=el.selectionEnd,u=el.value.toUpperCase();if(u!==el.value){el.value=u;try{el.setSelectionRange(s,e);}catch(_){}}});
+  });
+});
+</script>
+<script>/*sd-fields*/
+document.addEventListener('DOMContentLoaded',function(){
+  var dev=document.getElementById('tipoDispositivo'),pr=document.getElementById('pricing');
+  var dom=document.getElementById('tariffaDomestic'),pay=document.getElementById('tariffaPay');
+  var PRICE={Standard:'189',Lite:'139'};
+  var PAY={'0,80%':'0,50%','0,70%':'0,40%','0,60%':'0,30%'};
+  function sp(){ if(dev&&pr) pr.value=PRICE[dev.value]||''; }
+  function sy(){ if(dom&&pay) pay.value=PAY[dom.value]||''; }
+  if(dev) dev.addEventListener('change',sp);
+  if(dom) dom.addEventListener('change',sy);
+  sp(); sy();
+});
+</script>
+<script>/*sd-regprov*/
+document.addEventListener('DOMContentLoaded',function(){
+  var REGIONI={"Piemonte":["AL","AT","BI","CN","NO","TO","VB","VC"],"Valle d'Aosta":["AO"],"Lombardia":["BG","BS","CO","CR","LC","LO","MB","MI","MN","PV","SO","VA"],"Trentino-Alto Adige":["BZ","TN"],"Veneto":["BL","PD","RO","TV","VE","VI","VR"],"Friuli-Venezia Giulia":["GO","PN","TS","UD"],"Liguria":["GE","IM","SP","SV"],"Emilia-Romagna":["BO","FC","FE","MO","PC","PR","RA","RE","RN"],"Toscana":["AR","FI","GR","LI","LU","MS","PI","PO","PT","SI"],"Umbria":["PG","TR"],"Marche":["AN","AP","FM","MC","PU"],"Lazio":["FR","LT","RI","RM","VT"],"Abruzzo":["AQ","CH","PE","TE"],"Molise":["CB","IS"],"Campania":["AV","BN","CE","NA","SA"],"Puglia":["BA","BR","BT","FG","LE","TA"],"Basilicata":["MT","PZ"],"Calabria":["CS","CZ","KR","RC","VV"],"Sicilia":["AG","CL","CT","EN","ME","PA","RG","SR","TP"],"Sardegna":["CA","NU","OR","SS","SU"]};
+  var reg=document.getElementById('regione'),prov=document.getElementById('provincia');
+  if(!reg||!prov)return;
+  reg.innerHTML='<option value="">seleziona la regione</option>'+Object.keys(REGIONI).map(function(r){return '<option>'+r+'</option>';}).join('');
+  function fill(){var l=REGIONI[reg.value]||[];prov.innerHTML='<option value="">'+(reg.value?'seleziona provincia':'scegli prima la regione')+'</option>'+l.map(function(s){return '<option>'+s+'</option>';}).join('');prov.disabled=!reg.value;}
+  reg.addEventListener('change',fill);fill();
+});
+</script>
+</body>
+</html>
